@@ -1,0 +1,1 @@
+CREATE USER dbuser WITH ENCRYPTED PASSWORD 'dbracespass';

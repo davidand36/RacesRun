@@ -1,0 +1,9 @@
+version: '3'
+services:
+  db:
+    build: "db"
+    restart: always
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - ./db/docker-entrypoint:/docker-entrypoint-initdb.d
