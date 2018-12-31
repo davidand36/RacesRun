@@ -1,0 +1,53 @@
+{
+  "name": "my-races",
+  "version": "0.1.0",
+  "description": "My Races app",
+  "engine": {
+    "node": "10.x"
+  },
+  "main": "server/web.js",
+  "scripts": {
+    "postinstall": "gulp dev",
+    "start": "node server/web.js",
+    "build": "",
+    "test": "nyc mocha --recursive server/**/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/davidand36/MyRaces.git"
+  },
+  "keywords": [
+    "Races"
+  ],
+  "author": "David M. Anderson",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/davidand36/MyRaces/issues"
+  },
+  "homepage": "https://github.com/davidand36/MyRaces#readme",
+  "dependencies": {
+    "dotenv": "^6.2.0",
+    "koa": "^2.6.2",
+    "koa-body": "^4.0.6",
+    "koa-compress": "^3.0.0",
+    "koa-favicon": "^2.0.1",
+    "koa-helmet": "^4.0.0",
+    "koa-logger": "^3.2.0",
+    "koa-router": "^7.4.0",
+    "koa-static": "^5.0.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "del": "^3.0.0",
+    "gulp": "^4.0.0",
+    "gulp-eslint": "^5.0.0",
+    "gulp-htmlhint": "^2.2.1",
+    "gulp-replace": "^1.0.0",
+    "gulp-sass": "^4.0.2",
+    "gulp-sass-lint": "^1.4.0",
+    "mocha": "^5.2.0",
+    "node-sass": "^4.10.0",
+    "nyc": "^13.1.0",
+    "request-promise-native": "^1.0.5"
+  }
+}
