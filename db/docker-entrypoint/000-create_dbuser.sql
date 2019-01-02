@@ -1,1 +1,1 @@
-CREATE USER dbuser WITH ENCRYPTED PASSWORD 'dbracespass';
+CREATE USER dbracesuser WITH ENCRYPTED PASSWORD 'dbracespass';

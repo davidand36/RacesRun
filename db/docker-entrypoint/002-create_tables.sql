@@ -2,10 +2,8 @@
 
 CREATE TYPE gender AS ENUM ('female', 'male', 'other/none' );
 CREATE TYPE visibility AS ENUM ('all', 'users', 'friends', 'private');
-
 CREATE TABLE users (
     username        varchar(25) PRIMARY KEY,
-    password_hash   text NOT NULL,
     full_name       varchar(100) NOT NULL,
     gender          gender,
     date_of_birth   date,
@@ -13,13 +11,31 @@ CREATE TABLE users (
     visibility      visibility NOT NULL DEFAULT 'private',
     CHECK (date_of_birth < CURRENT_DATE)
 );
-
 CREATE INDEX users_fullname ON users (full_name);
+GRANT ALL PRIVILEGES ON TABLE users TO dbracesuser;
+
+
+CREATE TABLE passwords (
+    username        varchar(25) PRIMARY KEY,
+    pass_hash       jsonb NOT NULL,
+    FOREIGN KEY (username) REFERENCES users ON DELETE CASCADE
+);
+GRANT ALL PRIVILEGES ON TABLE passwords TO dbracesuser;
+
+
+CREATE TABLE friends (
+    id              SERIAL PRIMARY KEY,
+    username        varchar(25) NOT NULL,
+    friend          varchar(25) NOT NULL,
+    FOREIGN KEY (username) REFERENCES users ON DELETE CASCADE,
+    FOREIGN KEY (friend) REFERENCES users ON DELETE CASCADE,
+    UNIQUE (username, friend)
+);
+GRANT ALL PRIVILEGES ON TABLE friends TO dbracesuser;
 
 
 CREATE TYPE distance_unit AS ENUM ('m', 'km', 'mi', 'marathon');
 CREATE TYPE result_type AS ENUM ('finished', 'did not start', 'did not finish');
-
 CREATE TABLE races (
     id              SERIAL PRIMARY KEY,
     username        varchar(25) NOT NULL,
@@ -50,6 +66,6 @@ CREATE TABLE races (
     CHECK (gender_place > 0 AND gender_place <= gender_total),
     CHECK (division_place > 0 AND division_place <= division_total)
 );
-
 CREATE INDEX races_user ON races (username);
 CREATE INDEX races_date ON races (date);
+GRANT ALL PRIVILEGES ON TABLE races TO dbracesuser;
