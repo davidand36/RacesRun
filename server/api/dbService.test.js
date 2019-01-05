@@ -198,25 +198,35 @@ describe( 'dbService', function( ) {
         } );
     } );
 
-    describe( 'getUsers', function( ) {
-        beforeEach( async function( ) {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
+    async function create3Users( ) {
+        await dbService.createUser( {
+            username: 'username1',
+            fullName: 'Full Name 1',
+            gender: 'male',
+            dateOfBirth: new Date( 1969, 6, 20 ),
+            email: 'username1@example.com',
+            visibility: 'all',
+            password: 'secret1'
         } );
+        await dbService.createUser( {
+            username: 'username2',
+            fullName: 'Full Name 2',
+            password: 'secret2',
+        } );
+        await dbService.createUser( {
+            username: 'username3',
+            fullName: 'Full Name 3',
+            password: 'secret3',
+        } );
+    }
+
+    describe( 'getUsers', function( ) {
+        beforeEach( create3Users );
 
         it( 'gets all users in the DB', async function( ) {
             const users = await dbService.getUsers( );
 
-            expect( users.length ).to.equal( 2 );
+            expect( users.length ).to.equal( 3 );
             expect( users[ 1 ].fullName ).to.equal( 'Full Name 2' );
         } );
 
@@ -228,19 +238,7 @@ describe( 'dbService', function( ) {
     } );
 
     describe( 'getUser', function( ) {
-        beforeEach( async function () {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
-        } );
+        beforeEach( create3Users );
 
         it( 'gets user info by username', async function( ) {
             const user = await dbService.getUser( 'username2' );
@@ -264,14 +262,7 @@ describe( 'dbService', function( ) {
     describe( 'getPassHash', function( ) {
         // getPassHash() is tested more fully in authService test.
 
-        beforeEach( async function () {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-        } );
+        beforeEach( create3Users );
 
         it( 'gets an object with algorithm and key', async function( ) {
             const passHash = await dbService.getPassHash( 'username1' );
@@ -288,22 +279,7 @@ describe( 'dbService', function( ) {
     } );
 
     describe( 'updateUser', function( ) {
-        beforeEach( async function () {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                gender: 'male',
-                dateOfBirth: new Date( 1969, 6, 20 ),
-                email: 'username1@example.com',
-                visibility: 'all',
-                password: 'secret1'
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
-        } );
+        beforeEach( create3Users );
 
         it ( 'updates most fields', async function( ) {
             const newData = {
@@ -364,19 +340,7 @@ describe( 'dbService', function( ) {
     } );
 
     describe( 'updatePassword', function( ) {
-        beforeEach( async function () {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
-        } );
+        beforeEach( create3Users );
 
         it( 'changes the password', async function( ) {
             const authService = require( './authService' );
@@ -400,19 +364,7 @@ describe( 'dbService', function( ) {
     } );
 
     describe( 'changePassword', function( ) {
-        beforeEach( async function () {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
-        } );
+        beforeEach( create3Users );
 
         it( 'changes the password when the old one is supplied', async function( ) {
             const authService = require( './authService' );
@@ -455,25 +407,13 @@ describe( 'dbService', function( ) {
     } );
 
     describe( 'deleteUser', function( ) {
-        beforeEach( async function () {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
-        } );
+        beforeEach( create3Users );
 
         it( 'removes a user', async function( ) {
             await dbService.deleteUser( 'username1' );
             const users = await dbService.getUsers( );
 
-            expect( users.length ).to.equal( 1 );
+            expect( users.length ).to.equal( 2 );
             expect( users[ 0 ].username ).to.equal( 'username2' );
         } );
 
@@ -481,29 +421,12 @@ describe( 'dbService', function( ) {
             await dbService.deleteUser( 'nosuchuser' );
             const users = await dbService.getUsers();
 
-            expect( users.length ).to.equal( 2 );
+            expect( users.length ).to.equal( 3 );
         } );
     } );
 
     describe( 'addFriend', function( ) {
-        beforeEach( async function () {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
-            await dbService.createUser( {
-                username: 'username3',
-                fullName: 'Full Name 3',
-                password: 'secret3',
-            } );
-        } );
+        beforeEach( create3Users );
 
         it( 'adds a friend', async function( ) {
             const rslt = await dbService.addFriend( 'username1', 'username3' );
@@ -574,28 +497,15 @@ describe( 'dbService', function( ) {
         } );
     } );
 
+    async function create3UsersAnd3Friends( ) {
+        await create3Users( );
+        await dbService.addFriend( 'username1', 'username3' );
+        await dbService.addFriend( 'username2', 'username1' );
+        await dbService.addFriend( 'username2', 'username3' );
+   }
+
     describe( 'getFriends', function( ) {
-        beforeEach( async function( ) {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
-            await dbService.createUser( {
-                username: 'username3',
-                fullName: 'Full Name 3',
-                password: 'secret3',
-            } );
-            await dbService.addFriend( 'username1', 'username3' );
-            await dbService.addFriend( 'username2', 'username1' );
-            await dbService.addFriend( 'username2', 'username3' );
-        } );
+        beforeEach( create3UsersAnd3Friends );
 
         it( 'gets a list of friends of user', async function( ) {
             const friends1 = await dbService.getFriends( 'username1' );
@@ -610,27 +520,7 @@ describe( 'dbService', function( ) {
     } );
 
     describe( 'deleteFriend', function( ) {
-        beforeEach( async function( ) {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
-            await dbService.createUser( {
-                username: 'username3',
-                fullName: 'Full Name 3',
-                password: 'secret3',
-            } );
-            await dbService.addFriend( 'username1', 'username3' );
-            await dbService.addFriend( 'username2', 'username1' );
-            await dbService.addFriend( 'username2', 'username3' );
-        } );
+        beforeEach( create3UsersAnd3Friends );
 
         it( 'removes a friend', async function( ) {
             await dbService.deleteFriend( 'username2', 'username1' );
@@ -648,24 +538,7 @@ describe( 'dbService', function( ) {
     } );
 
     describe( 'createRace', function( ) {
-        beforeEach( async function () {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
-            await dbService.createUser( {
-                username: 'username3',
-                fullName: 'Full Name 3',
-                password: 'secret3',
-            } );
-        } );
+        beforeEach( create3Users );
 
         it( 'adds a race to the DB', async function( ) {
             const fullData = {
@@ -1116,67 +989,61 @@ describe( 'dbService', function( ) {
         } );
     } );
 
+    async function create3UsersAnd3Races( ) {
+        await create3Users( );
+        const raceId1 = await dbService.createRace( {
+            username: 'username1',
+            name: 'Race Name 1',
+            url: 'https://races.example.com/race1.html',
+            resultsUrl: 'https://racesresults.example.com?race=race1',
+            date: new Date( 2015, 5, 30 ),
+            city: 'Anytown',
+            state: 'WA',
+            country: 'US',
+            distance: 1,
+            unit: 'marathon',
+            bib: '1729',
+            result: 'finished',
+            chipTime: 13424,
+            gunTime: 13484,
+            overallPlace: 500,
+            overallTotal: 1000,
+            genderPlace: 50,
+            genderTotal: 100,
+            divisionPlace: 5,
+            divisionTotal: 10,
+            divisionName: 'M 60-64',
+            notes: 'This was my first marathon. Nice and flat.'
+        } );
+        const raceId2 = await dbService.createRace( {
+            username: 'username2',
+            name: 'Race Name 2',
+            date: new Date( 2016, 3, 5 ),
+            city: 'Sometown',
+            country: 'US',
+            distance: 0.5,
+            unit: 'marathon'
+        } );
+        const raceId3 = await dbService.createRace( {
+            username: 'username1',
+            name: 'Race Name 3',
+            date: new Date( 2018, 7, 14 ),
+            city: 'Mytown',
+            state: 'OR',
+            country: 'US',
+            distance: 5
+        } );
+
+        return [ raceId1, raceId2, raceId3 ];
+    }
+
     describe( 'getRace', function( ) {
         let raceId1, raceId2, raceId3;
         beforeEach( async function () {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
-            await dbService.createUser( {
-                username: 'username3',
-                fullName: 'Full Name 3',
-                password: 'secret3',
-            } );
-            raceId1 = await dbService.createRace( {
-                username: 'username1',
-                name: 'Race Name 1',
-                url: 'https://races.example.com/race1.html',
-                resultsUrl: 'https://racesresults.example.com?race=race1',
-                date: new Date( 2015, 5, 30 ),
-                city: 'Anytown',
-                state: 'WA',
-                country: 'US',
-                distance: 1,
-                unit: 'marathon',
-                bib: '1729',
-                result: 'finished',
-                chipTime: 13424,
-                gunTime: 13484,
-                overallPlace: 500,
-                overallTotal: 1000,
-                genderPlace: 50,
-                genderTotal: 100,
-                divisionPlace: 5,
-                divisionTotal: 10,
-                divisionName: 'M 60-64',
-                notes: 'This was my first marathon. Nice and flat.'
-            } );
-            raceId2 = await dbService.createRace( {
-                username: 'username2',
-                name: 'Race Name 2',
-                date: new Date( 2016, 3, 5 ),
-                city: 'Sometown',
-                country: 'US',
-                distance: 0.5,
-                unit: 'marathon'
-            } );
-            raceId3 = await dbService.createRace( {
-                username: 'username1',
-                name: 'Race Name 3',
-                date: new Date( 2018, 7, 14 ),
-                city: 'Mytown',
-                state: 'OR',
-                country: 'US',
-                distance: 5
-            } );
+            const ids = await create3UsersAnd3Races( );
+            raceId1 = ids[ 0 ];
+            raceId2 = ids[ 1 ];
+            raceId3 = ids[ 2 ];
         } );
 
         it( 'gets a race by ID', async function( ) {
@@ -1195,66 +1062,7 @@ describe( 'dbService', function( ) {
     } );
 
     describe( 'getUserRaces', function( ) {
-        beforeEach( async function( ) {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
-            await dbService.createUser( {
-                username: 'username3',
-                fullName: 'Full Name 3',
-                password: 'secret3',
-            } );
-            await dbService.createRace( {
-                username: 'username1',
-                name: 'Race Name 1',
-                url: 'https://races.example.com/race1.html',
-                resultsUrl: 'https://racesresults.example.com?race=race1',
-                date: new Date( 2015, 5, 30 ),
-                city: 'Anytown',
-                state: 'WA',
-                country: 'US',
-                distance: 1,
-                unit: 'marathon',
-                bib: '1729',
-                result: 'finished',
-                chipTime: 13424,
-                gunTime: 13484,
-                overallPlace: 500,
-                overallTotal: 1000,
-                genderPlace: 50,
-                genderTotal: 100,
-                divisionPlace: 5,
-                divisionTotal: 10,
-                divisionName: 'M 60-64',
-                notes: 'This was my first marathon. Nice and flat.'
-            } );
-            await dbService.createRace( {
-                username: 'username2',
-                name: 'Race Name 2',
-                date: new Date( 2016, 3, 5 ),
-                city: 'Sometown',
-                country: 'US',
-                distance: 0.5,
-                unit: 'marathon'
-            } );
-            await dbService.createRace( {
-                username: 'username1',
-                name: 'Race Name 3',
-                date: new Date( 2018, 7, 14 ),
-                city: 'Mytown',
-                state: 'OR',
-                country: 'US',
-                distance: 5
-            } );
-        } );
+        beforeEach( create3UsersAnd3Races );
 
         it( "gets a user's races", async function( ) {
             const races1 = await dbService.getUserRaces( 'username1' );
@@ -1274,64 +1082,10 @@ describe( 'dbService', function( ) {
     describe( 'updateRace', function( ) {
         let raceId1, raceId2, raceId3;
         beforeEach( async function () {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
-            await dbService.createUser( {
-                username: 'username3',
-                fullName: 'Full Name 3',
-                password: 'secret3',
-            } );
-            raceId1 = await dbService.createRace( {
-                username: 'username1',
-                name: 'Race Name 1',
-                url: 'https://races.example.com/race1.html',
-                resultsUrl: 'https://racesresults.example.com?race=race1',
-                date: new Date( 2015, 5, 30 ),
-                city: 'Anytown',
-                state: 'WA',
-                country: 'US',
-                distance: 1,
-                unit: 'marathon',
-                bib: '1729',
-                result: 'finished',
-                chipTime: 13424,
-                gunTime: 13484,
-                overallPlace: 500,
-                overallTotal: 1000,
-                genderPlace: 50,
-                genderTotal: 100,
-                divisionPlace: 5,
-                divisionTotal: 10,
-                divisionName: 'M 60-64',
-                notes: 'This was my first marathon. Nice and flat.'
-            } );
-            raceId2 = await dbService.createRace( {
-                username: 'username2',
-                name: 'Race Name 2',
-                date: new Date( 2016, 3, 5 ),
-                city: 'Sometown',
-                country: 'US',
-                distance: 0.5,
-                unit: 'marathon'
-            } );
-            raceId3 = await dbService.createRace( {
-                username: 'username1',
-                name: 'Race Name 3',
-                date: new Date( 2018, 7, 14 ),
-                city: 'Mytown',
-                state: 'OR',
-                country: 'US',
-                distance: 5
-            } );
+            const ids = await create3UsersAnd3Races();
+            raceId1 = ids[ 0 ];
+            raceId2 = ids[ 1 ];
+            raceId3 = ids[ 2 ];
         } );
 
         it( 'updates most fields', async function( ) {
@@ -1422,64 +1176,10 @@ describe( 'dbService', function( ) {
     describe( 'deleteRace', function( ) {
         let raceId1, raceId2, raceId3;
         beforeEach( async function () {
-            await dbService.createUser( {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                email: 'username1@example.com',
-                password: 'secret1',
-            } );
-            await dbService.createUser( {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2',
-            } );
-            await dbService.createUser( {
-                username: 'username3',
-                fullName: 'Full Name 3',
-                password: 'secret3',
-            } );
-            raceId1 = await dbService.createRace( {
-                username: 'username1',
-                name: 'Race Name 1',
-                url: 'https://races.example.com/race1.html',
-                resultsUrl: 'https://racesresults.example.com?race=race1',
-                date: new Date( 2015, 5, 30 ),
-                city: 'Anytown',
-                state: 'WA',
-                country: 'US',
-                distance: 1,
-                unit: 'marathon',
-                bib: '1729',
-                result: 'finished',
-                chipTime: 13424,
-                gunTime: 13484,
-                overallPlace: 500,
-                overallTotal: 1000,
-                genderPlace: 50,
-                genderTotal: 100,
-                divisionPlace: 5,
-                divisionTotal: 10,
-                divisionName: 'M 60-64',
-                notes: 'This was my first marathon. Nice and flat.'
-            } );
-            raceId2 = await dbService.createRace( {
-                username: 'username2',
-                name: 'Race Name 2',
-                date: new Date( 2016, 3, 5 ),
-                city: 'Sometown',
-                country: 'US',
-                distance: 0.5,
-                unit: 'marathon'
-            } );
-            raceId3 = await dbService.createRace( {
-                username: 'username1',
-                name: 'Race Name 3',
-                date: new Date( 2018, 7, 14 ),
-                city: 'Mytown',
-                state: 'OR',
-                country: 'US',
-                distance: 5
-            } );
+            const ids = await create3UsersAnd3Races();
+            raceId1 = ids[ 0 ];
+            raceId2 = ids[ 1 ];
+            raceId3 = ids[ 2 ];
         } );
 
         it( 'removes a race from the DB', async function( ) {
