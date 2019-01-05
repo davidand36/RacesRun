@@ -9,7 +9,7 @@ CREATE TABLE users (
     date_of_birth   date,
     email           varchar(250) UNIQUE,
     visibility      visibility NOT NULL DEFAULT 'private',
-    CHECK (date_of_birth < CURRENT_DATE)
+    CONSTRAINT users_date_of_birth_check CHECK (date_of_birth < CURRENT_DATE)
 );
 CREATE INDEX users_fullname ON users (full_name);
 GRANT ALL PRIVILEGES ON TABLE users TO dbracesuser;
@@ -24,20 +24,20 @@ GRANT ALL PRIVILEGES ON TABLE passwords TO dbracesuser;
 
 
 CREATE TABLE friends (
-    id              SERIAL PRIMARY KEY,
     username        varchar(25) NOT NULL,
     friend          varchar(25) NOT NULL,
+    PRIMARY KEY (username, friend),
     FOREIGN KEY (username) REFERENCES users ON DELETE CASCADE,
-    FOREIGN KEY (friend) REFERENCES users ON DELETE CASCADE,
-    UNIQUE (username, friend)
+    FOREIGN KEY (friend) REFERENCES users ON DELETE CASCADE
 );
 GRANT ALL PRIVILEGES ON TABLE friends TO dbracesuser;
 
 
+CREATE SEQUENCE races_seq;
 CREATE TYPE distance_unit AS ENUM ('m', 'km', 'mi', 'marathon');
-CREATE TYPE result_type AS ENUM ('finished', 'did not start', 'did not finish');
+CREATE TYPE result_type AS ENUM ('finished', 'did not start', 'did not finish', 'disqualified');
 CREATE TABLE races (
-    id              SERIAL PRIMARY KEY,
+    id              integer PRIMARY KEY DEFAULT nextval('races_seq'),
     username        varchar(25) NOT NULL,
     name            varchar(100) NOT NULL,
     url             varchar(250),
@@ -61,11 +61,15 @@ CREATE TABLE races (
     division_name   varchar(25),
     notes           varchar(1000),
     FOREIGN KEY (username) REFERENCES users ON DELETE CASCADE,
-    CHECK (distance > 0),
-    CHECK (overall_place > 0 AND overall_place <= overall_total),
-    CHECK (gender_place > 0 AND gender_place <= gender_total),
-    CHECK (division_place > 0 AND division_place <= division_total)
+    CHECK (id > 0),
+    CONSTRAINT races_date_check CHECK (date <= CURRENT_DATE),
+    CONSTRAINT races_distance_check CHECK (distance > 0),
+    CONSTRAINT races_chip_time_check CHECK (chip_time > 0),
+    CONSTRAINT races_gun_time_check CHECK (gun_time > 0),
+    CONSTRAINT races_overall_place_check CHECK (overall_place > 0 AND overall_place <= overall_total),
+    CONSTRAINT races_gender_place_check CHECK (gender_place > 0 AND gender_place <= gender_total),
+    CONSTRAINT races_division_place_check CHECK (division_place > 0 AND division_place <= division_total)
 );
-CREATE INDEX races_user ON races (username);
-CREATE INDEX races_date ON races (date);
+CREATE INDEX races_user_date_idx ON races (username, date);
+GRANT ALL PRIVILEGES ON SEQUENCE races_seq TO dbracesuser;
 GRANT ALL PRIVILEGES ON TABLE races TO dbracesuser;

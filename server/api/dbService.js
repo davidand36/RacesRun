@@ -32,12 +32,13 @@ const userPublicFields = [
 
 async function getUsers( ) {
     return await db.select( userPublicFields )
-        .from( 'users' );
+        .from( 'users' )
+        .orderBy( 'fullName' );
     //!!! Restrict visibility
 }
 
 async function getUser( username ) {
-    let fields = userPublicFields;
+    let fields = userPublicFields.slice( 0 );
     //!!! if ( username !== loggedInUser ) 
     fields.push( 'email' );
     const users = await db.select( fields )
@@ -81,7 +82,7 @@ async function createUser( data ) {
         return usernames[ 0 ];
     } )
     .catch( function( err ) {
-        throw convertDbError( err );
+        throw convertUsersDbError( err );
     } );
 }
 
@@ -103,19 +104,32 @@ async function updateUser( username, data ) {
     if ( data.visibility ) {
         newData.visibility = data.visibility;
     }
+    if ( Object.keys( newData ).length === 0 ) {
+        return Promise.resolve( );
+    }
     await db( 'users' )
         .update( newData )
-        .where( 'username', username );
+        .where( 'username', username )
+    .catch ( function( err ) {
+        throw convertUsersDbError( err );
+    } );
 }
 
-async function updatePassword( username, data ) {
+async function updatePassword( username, password ) {
+    await db( 'passwords' )
+        .update( {
+            pass_hash: await authService.hashPassword( password )
+        } )
+        .where( 'username', username )
+    .catch ( function( err ) {
+        throw convertUsersDbError( err );
+    } );
+}
+
+async function changePassword( username, data) {
     //!!! if ( username !== loggedInUser ) return;
     if ( await authService.validateUser( username, data.currentPassword ) ) {
-        await db( 'passwords' )
-            .update( {
-                pass_hash: await authService.hashPassword( data.newPassword )
-            } )
-            .where( 'username', username );
+        await updatePassword( username, data.newPassword );
     } else {
         throw new Error( 'Unauthorized' );
     }
@@ -128,6 +142,76 @@ async function deleteUser( username ) {
         .where( 'username', username );
 }
 
+function convertUsersDbError( err ) {
+    let message;
+    // These are errors reported by PostgreSQL.
+    switch ( err.code ) {
+        case '23502': { //not_null_violation
+            const fieldName = convertName( err.column );
+            message = `Data Error: ${fieldName} is required`;
+            break;
+        }
+        case '23505':   //unique_violation
+        case '23514': { //check_violation
+            switch ( err.constraint ) {
+                case 'users_pkey': {
+                    message = 'Data Error: This Username is already registered';
+                    break;
+                }
+                case 'users_date_of_birth_check': {
+                    message = 'Data Error: Invalid Date of Birth';
+                    break;
+                }
+                case 'users_email_key': {
+                    message = 'Data Error: This Email Address is already registered';
+                    break;
+                }
+                default: {
+                    console.log( 'err: ', err );
+                    break;
+                }
+            }
+            break;
+        }
+        case '22001': { //string_data_right_truncation
+            message = 'Data Error: invalid data';
+            break;
+        }
+        case '22P02': { //invalid_text_representation
+            const re = /invalid input value for enum (\w+)/;
+            const match = err.toString().match( re );
+            if ( match ) {
+                const fieldName = convertName( match[ 1 ] );
+                message = `Data Error: Invalid value for ${fieldName}`;
+            } else {
+                message = 'Data Error: Invalid text value';
+            }
+            break;
+        }
+        default: {
+            console.log( 'err: ', err );
+            message = 'Database Error: ' + err.toString();
+            break;
+        }
+    }
+
+    return new Error( message );
+
+    function convertName( dbFieldName ) {
+        const fieldNameMap = {
+            'username': 'Username',
+            'full_name': 'Full Name',
+            'gender': 'Gender',
+            'date_of_birth': 'Date of Birth',
+            'email': 'Email',
+            'visibility': 'Visibility',
+            'pass_hash': 'Password'
+        };
+        return fieldNameMap[ dbFieldName ];
+    }
+}
+
+
 async function getFriends( username ) {
     //!!! if ( username !== loggedInUser ) return;
     return await db.select( userPublicFields )
@@ -139,31 +223,85 @@ async function getFriends( username ) {
         } );
 }
 
-async function addFriend( data ) {
+async function addFriend( username, friend ) {
     //!!! if ( data.username !== loggedInUser ) return;
-    return await db.insert( {
-        username: data.username,
-        friend: data.friend
+    const inserts = await db.insert( {
+        username,
+        friend
     } )
         .into( 'friends' )
-        .returning( 'id' );
+        .returning( [ 'username', 'friend' ] )
+    .catch ( function( err ) {
+        throw convertFriendsDbError( err );
+    } );
+    return inserts[ 0 ];
 }
 
-async function deleteFriend( id ) {
-    const usernames = await db.select( 'username' )
-        .from( 'friends' )
-        .where( 'id', id );
-    if ( usernames.length === 0 ) {
-        return;
-    }
-    //!!! if ( usernames[ 0 ].username !== loggedInUser ) return;
+async function deleteFriend( username, friend ) {
+    //!!! if ( username !== loggedInUser ) return;
     await db( 'friends' )
         .del( )
-        .where( 'id', id );
+        .where( { username, friend } );
 }
+
+function convertFriendsDbError( err ) {
+    let message;
+    // These are errors reported by PostgreSQL.
+    switch ( err.code ) {
+        case '23502': { //not_null_violation
+            const fieldName = convertName( err.column );
+            message = `Data Error: ${fieldName} is required`;
+            break;
+        }
+        case '23503':   //foreign_key_violation
+        case '23505': { //unique_violation
+            switch ( err.constraint ) {
+                case 'friends_pkey':
+                case 'friends_username_friend_key': {
+                    message = 'Data Error: This Friend is already listed';
+                    break;
+                }
+                case 'friends_username_fkey': {
+                    message = 'Data Error: Username does not refer to a known user';
+                    break;
+                }
+                case 'friends_friend_fkey': {
+                    message = 'Data Error: Friend does not refer to a known user';
+                    break;
+                }
+                default: {
+                    console.log( 'err: ', err );
+                    break;
+                }
+            }
+            break;
+        }
+        case '22001': { //string_data_right_truncation
+            message = 'Data Error: invalid data';
+            break;
+        }
+        default: {
+            console.log( 'err: ', err );
+            message = err.toString();
+            break;
+        }
+    }
+
+    return new Error( message );
+
+    function convertName( dbFieldName ) {
+        const fieldNameMap = {
+            'username': 'Username',
+            'friend': 'Friend'
+        };
+        return fieldNameMap[ dbFieldName ];
+    }
+}
+
 
 const racePublicFields = [
     'id',
+    'username',
     'name',
     'url',
     'results_url as resultsUrl',
@@ -187,16 +325,28 @@ const racePublicFields = [
     'notes'
 ];
 
+async function getRace( id ) {
+    const races = await db.select( racePublicFields )
+        .from( 'races' )
+        .where( 'id', id );
+    if ( races.length > 0 ) {
+        return races[ 0 ];
+    } else {
+        return null;
+    }
+}
+
 async function getUserRaces( username ) {
     //!!! Restrict visibility
     return await db.select( racePublicFields )
         .from( 'races' )
-        .where( 'username', username );    
+        .where( 'username', username )
+        .orderBy( 'date' );
 }
 
 async function createRace( data ) {
     //!!! if ( data.username !== loggedInUser ) return;
-    return await db.insert( {
+    const ids = await db.insert( {
         username: data.username,
         name: data.name,
         url: data.url,
@@ -221,11 +371,88 @@ async function createRace( data ) {
         notes: data.notes
     } )
         .returning( 'id' )
-        .into( 'races' );
+        .into( 'races' )
+    .catch( function ( err ) {
+        throw convertRacesDbError( err );
+    } );
+    return ids[ 0 ];
 }
 
 async function updateRace( id, data ) {
-    //!!!
+    //!!! if ( username !== loggedInUser ) return;
+    let newData = {};
+    if ( data.name ) {
+        newData.name = data.name;
+    }
+    if ( data.url ) {
+        newData.url = data.url;
+    }
+    if ( data.resultsUrl ) {
+        newData.results_url = data.resultsUrl;
+    }
+    if ( data.date ) {
+        newData.date = data.date;
+    }
+    if ( data.city ) {
+        newData.city = data.city;
+    }
+    if ( data.state ) {
+        newData.state = data.state;
+    }
+    if ( data.country ) {
+        newData.country = data.country;
+    }
+    if ( data.distance ) {
+        newData.distance = data.distance;
+    }
+    if ( data.unit ) {
+        newData.unit = data.unit;
+    }
+    if ( data.bib ) {
+        newData.bib = data.bib;
+    }
+    if ( data.result ) {
+        newData.result = data.result;
+    }
+    if ( data.chipTime ) {
+        newData.chip_time = data.chipTime;
+    }
+    if ( data.gunTime ) {
+        newData.gun_time = data.gunTime;
+    }
+    if ( data.overallPlace ) {
+        newData.overall_place = data.overallPlace;
+    }
+    if ( data.overallTotal ) {
+        newData.overall_total = data.overallTotal;
+    }
+    if ( data.genderPlace ) {
+        newData.gender_place = data.genderPlace;
+    }
+    if ( data.genderTotal ) {
+        newData.gender_total = data.genderTotal;
+    }
+    if ( data.divisionPlace ) {
+        newData.division_place = data.divisionPlace;
+    }
+    if ( data.divisionTotal ) {
+        newData.division_total = data.divisionTotal;
+    }
+    if ( data.divisionName ) {
+        newData.division_name = data.divisionName;
+    }
+    if ( data.notes ) {
+        newData.notes = data.notes;
+    }
+    if ( Object.keys( newData ).length === 0 ) {
+        return Promise.resolve();
+    }
+    await db( 'races' )
+        .update( newData )
+        .where( 'id', id )
+        .catch( function ( err ) {
+            throw convertRacesDbError( err );
+        } );
 }
 
 async function deleteRace( id ) {
@@ -241,32 +468,110 @@ async function deleteRace( id ) {
         .where( 'id', id );
 }
 
-function convertDbError( err ) {
+function convertRacesDbError( err ) {
     let message;
     // These are errors reported by PostgreSQL.
     switch ( err.code ) {
-        case '23502': //not_null_violation
-            message = 'Data Error: required field missing';
+        case '23502': { //not_null_violation
+            const fieldName = convertName( err.column );
+            message = `Data Error: ${fieldName} is required`;
             break;
-        case '23505': //unique_violation
-            message = 'Data Error: duplicate value';
+        }
+        case '23503':   //foreign_key_violation
+        case '23514': { //check_violation
+            switch ( err.constraint ) {
+                case 'races_username_fkey': {
+                    message = 'Data Error: Username does not refer to a known user';
+                    break;
+                }
+                case 'races_date_check': {
+                    message = 'Data Error: Invalid value for Date';
+                    break;
+                }
+                case 'races_distance_check': {
+                    message = 'Data Error: Invalid value for Distance';
+                    break;
+                }
+                case 'races_chip_time_check': {
+                    message = 'Data Error: Invalid value for Chip Time';
+                    break;
+                }
+                case 'races_gun_time_check': {
+                    message = 'Data Error: Invalid value for Gun Time';
+                    break;
+                }
+                case 'races_overall_place_check': {
+                    message = 'Data Error: Invalid value for Overall Place';
+                    break;
+                }
+                case 'races_gender_place_check': {
+                    message = 'Data Error: Invalid value for Gender Place';
+                    break;
+                }
+                case 'races_division_place_check': {
+                    message = 'Data Error: Invalid value for Division Place';
+                    break;
+                }
+                default: {
+                    console.log( 'err: ', err );
+                    break;
+                }
+            }
             break;
-        case '22001': //string_data_right_truncation
-        case '22008': //datetime_field_overflow
-        case '22026': //string_data_length_mismatch
-        case '23001': //restrict_violation
-        case '23503': //foreign_key_violation
-        case '23514': //check_violation
-        case '23P01': //exclusion_violation
+        }
+        case '22001': { //string_data_right_truncation
             message = 'Data Error: invalid data';
             break;
-        default:
-            return err;
+        }
+        case '22P02': { //invalid_text_representation
+            const re = /invalid input value for enum (\w+)/;
+            const match = err.toString().match( re );
+            if ( match ) {
+                const fieldName = convertName( match[ 1 ] );
+                message = `Data Error: Invalid value for ${fieldName}`;
+            } else {
+                message = 'Data Error: Invalid text value';
+            }
+            break;
+        }
+        default: {
+            console.log( 'err: ', err );
+            message = err.toString();
+            break;
+        }
     }
-    if ( err.column ) {
-        message += ': ' + err.column;
-    }
+
     return new Error( message );
+
+    function convertName( dbFieldName ) {
+        const fieldNameMap = {
+            'username': 'Username',
+            'name': 'Race Name',
+            'url': 'URL',
+            'results_url': 'Results URL',
+            'date': 'Date',
+            'city': 'City',
+            'state': 'State',
+            'country': 'Country',
+            'distance': 'Distance',
+            'unit': 'Unit',
+            'distance_unit': 'Unit',
+            'bib': 'Bib',
+            'result': 'Result',
+            'result_type': 'Result',
+            'chip_time': 'Chip Time',
+            'gun_time': 'Gun Time',
+            'overall_place': 'Overall Place',
+            'overall_total': 'Overall Total',
+            'gender_place': 'Gender Place',
+            'gender_total': 'Gender Total',
+            'division_place': 'Division Place',
+            'division_total': 'Division Total',
+            'division_name': 'Division Name',
+            'notes': 'Notes'
+        };
+        return fieldNameMap[ dbFieldName ];
+    }
 }
 
 async function deleteAll( ) {
@@ -283,18 +588,20 @@ async function disconnect( ) {
 module.exports = {
     getUsers,
     getUser,
-    getPassHash,
+    getPassHash,    //Not for Web API
     createUser,
     updateUser,
-    updatePassword,
+    updatePassword, //Not for Web API
+    changePassword,
     deleteUser,
     getFriends,
     addFriend,
     deleteFriend,
     getUserRaces,
+    getRace,
     createRace,
     updateRace,
     deleteRace,
-    deleteAll,
-    disconnect
+    deleteAll,      //Not for Web API
+    disconnect      //Not for Web API
 }

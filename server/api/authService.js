@@ -37,7 +37,7 @@ function hashPassword( password ) {
 
 function validatePassword( password, passHash ) {
     return new Promise( function( resolve, reject ) {
-        if ( passHash ) {
+        if ( password && passHash ) {
             if ( passHash.algorithm === 'scrypt' ) {
                 const salt = Buffer.from( passHash.salt, 'hex' );
                 crypto.scrypt( password, salt, passHash.keyLen, function ( err, key ) {

@@ -18,6 +18,12 @@ describe( 'authService', function () {
             expect( passHash ).to.have.property( 'algorithm' );
             expect( passHash ).to.have.property( 'key' );
         } );
+
+        it( 'returns null for empty password', async function( ) {
+            const passHash = await authService.hashPassword( '' );
+
+            expect( passHash ).to.be.null;
+        } );
     } );
 
     describe( 'validatePassword', function( ) {
