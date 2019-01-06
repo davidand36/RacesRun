@@ -8,6 +8,7 @@
 */
 
 require( 'dotenv' ).config();
+const _ = require( 'lodash' );
 const knex = require( 'knex' );
 const authService = require( './authService' );
 
@@ -23,25 +24,41 @@ const db = knex( {
     asyncStackTraces: true //for development
 } );
 
-const userPublicFields = [ 
-    'username',
-    'full_name as fullName',
+const userPublicNonkeyFields = [
+    'fullName',
     'gender',
-    'date_of_birth as dateOfBirth'
+    'dateOfBirth'
+];
+
+const usersPublicFields = [
+    'username',
+    ...userPublicNonkeyFields
+];
+
+const usersAllNonkeyFields = [
+    ...userPublicNonkeyFields,
+    'email',
+    'visibility'
+];
+
+const usersAllFields = [
+    'username',
+    ...usersAllNonkeyFields
+];
+
+const passwordsNonkeyFields = [
+    'passHash'
 ];
 
 async function getUsers( ) {
-    return await db.select( userPublicFields )
+    return await db.select( makeSelectList( usersPublicFields ) )
         .from( 'users' )
         .orderBy( 'fullName' );
     //!!! Restrict visibility
 }
 
 async function getUser( username ) {
-    let fields = userPublicFields.slice( 0 );
-    //!!! if ( username !== loggedInUser ) 
-    fields.push( 'email' );
-    const users = await db.select( fields )
+    const users = await db.select( makeSelectList( usersAllFields ) )
         .from( 'users' )
         .where( 'username', username);
     if ( users.length ) {
@@ -52,7 +69,7 @@ async function getUser( username ) {
 }
 
 async function getPassHash( username ) {
-    const passes = await db.select( 'pass_hash as passHash' )
+    const passes = await db.select( makeSelectList( passwordsNonkeyFields ) )
         .from( 'passwords' )
         .where( 'username', username );
     if ( passes.length ) {
@@ -64,14 +81,7 @@ async function getPassHash( username ) {
 
 async function createUser( data ) {
     return await db.transaction( async function( trx ) {
-        const usernames = await trx.insert( {
-            username: data.username,
-            full_name: data.fullName,
-            gender: data.gender,
-            date_of_birth: data.dateOfBirth,
-            email: data.email,
-            visibility: data.visibility
-        } )
+        const usernames = await trx.insert( convertDataForDb( data, usersAllFields ) )
             .returning( 'username' )
             .into( 'users' );
         await trx.insert( {
@@ -88,22 +98,7 @@ async function createUser( data ) {
 
 async function updateUser( username, data ) {
     //!!! if ( username !== loggedInUser ) return;
-    let newData = {};
-    if ( data.fullName ) {
-        newData.full_name = data.fullName;
-    }
-    if ( data.gender ) {
-        newData.gender = data.gender;
-    }
-    if ( data.dateOfBirth ) {
-        newData.date_of_birth = data.dateOfBirth
-    }
-    if ( data.email ) {
-        newData.email = data.email;
-    }
-    if ( data.visibility ) {
-        newData.visibility = data.visibility;
-    }
+    let newData = convertDataForDb( data, usersAllNonkeyFields );
     if ( Object.keys( newData ).length === 0 ) {
         return Promise.resolve( );
     }
@@ -198,23 +193,17 @@ function convertUsersDbError( err ) {
     return new Error( message );
 
     function convertName( dbFieldName ) {
-        const fieldNameMap = {
-            'username': 'Username',
-            'full_name': 'Full Name',
-            'gender': 'Gender',
-            'date_of_birth': 'Date of Birth',
-            'email': 'Email',
-            'visibility': 'Visibility',
+        const specialNames = {
             'pass_hash': 'Password'
         };
-        return fieldNameMap[ dbFieldName ];
+        return specialNames[ dbFieldName ] || _.startCase( dbFieldName );
     }
 }
 
 
 async function getFriends( username ) {
     //!!! if ( username !== loggedInUser ) return;
-    return await db.select( userPublicFields )
+    return await db.select( makeSelectList( usersPublicFields ) )
         .from( 'users' )
         .whereIn( 'username', function( ) {
             this.select( 'friend' )
@@ -290,21 +279,15 @@ function convertFriendsDbError( err ) {
     return new Error( message );
 
     function convertName( dbFieldName ) {
-        const fieldNameMap = {
-            'username': 'Username',
-            'friend': 'Friend'
-        };
-        return fieldNameMap[ dbFieldName ];
+        return _.startCase( dbFieldName );
     }
 }
 
 
-const racePublicFields = [
-    'id',
-    'username',
+const racesUpdateFields = [
     'name',
     'url',
-    'results_url as resultsUrl',
+    'resultsUrl',
     'date',
     'city',
     'state',
@@ -313,20 +296,30 @@ const racePublicFields = [
     'unit',
     'bib',
     'result',
-    'chip_time as chipTime',
-    'gun_time as gunTime',
-    'overall_place as overallPlace',
-    'overall_total as overallTotal',
-    'gender_place as genderPlace',
-    'gender_total as genderTotal',
-    'division_place as divisionPlace',
-    'division_total as divisionTotal',
-    'division_name as divisionName',
+    'chipTime',
+    'gunTime',
+    'overallPlace',
+    'overallTotal',
+    'genderPlace',
+    'genderTotal',
+    'divisionPlace',
+    'divisionTotal',
+    'divisionName',
     'notes'
 ];
 
+const racesNonkeyFields = [
+    'username',
+    ...racesUpdateFields
+]
+
+const racesAllFields = [
+    'id',
+    ...racesNonkeyFields
+];
+
 async function getRace( id ) {
-    const races = await db.select( racePublicFields )
+    const races = await db.select( makeSelectList( racesAllFields ) )
         .from( 'races' )
         .where( 'id', id );
     if ( races.length > 0 ) {
@@ -338,7 +331,7 @@ async function getRace( id ) {
 
 async function getUserRaces( username ) {
     //!!! Restrict visibility
-    return await db.select( racePublicFields )
+    return await db.select( makeSelectList( racesAllFields ) )
         .from( 'races' )
         .where( 'username', username )
         .orderBy( 'date' );
@@ -346,30 +339,7 @@ async function getUserRaces( username ) {
 
 async function createRace( data ) {
     //!!! if ( data.username !== loggedInUser ) return;
-    const ids = await db.insert( {
-        username: data.username,
-        name: data.name,
-        url: data.url,
-        results_url: data.resultsUrl,
-        date: data.date,
-        city: data.city,
-        state: data.state,
-        country: data.country,
-        distance: data.distance,
-        unit: data.unit,
-        bib: data.bib,
-        result: data.result,
-        chip_time: data.chipTime,
-        gun_time: data.gunTime,
-        overall_place: data.overallPlace,
-        overall_total: data.overallTotal,
-        gender_place: data.genderPlace,
-        gender_total: data.genderTotal,
-        division_place: data.divisionPlace,
-        division_total: data.divisionTotal,
-        division_name: data.divisionName,
-        notes: data.notes
-    } )
+    const ids = await db.insert( convertDataForDb( data, racesNonkeyFields ) )
         .returning( 'id' )
         .into( 'races' )
     .catch( function ( err ) {
@@ -380,70 +350,7 @@ async function createRace( data ) {
 
 async function updateRace( id, data ) {
     //!!! if ( username !== loggedInUser ) return;
-    let newData = {};
-    if ( data.name ) {
-        newData.name = data.name;
-    }
-    if ( data.url ) {
-        newData.url = data.url;
-    }
-    if ( data.resultsUrl ) {
-        newData.results_url = data.resultsUrl;
-    }
-    if ( data.date ) {
-        newData.date = data.date;
-    }
-    if ( data.city ) {
-        newData.city = data.city;
-    }
-    if ( data.state ) {
-        newData.state = data.state;
-    }
-    if ( data.country ) {
-        newData.country = data.country;
-    }
-    if ( data.distance ) {
-        newData.distance = data.distance;
-    }
-    if ( data.unit ) {
-        newData.unit = data.unit;
-    }
-    if ( data.bib ) {
-        newData.bib = data.bib;
-    }
-    if ( data.result ) {
-        newData.result = data.result;
-    }
-    if ( data.chipTime ) {
-        newData.chip_time = data.chipTime;
-    }
-    if ( data.gunTime ) {
-        newData.gun_time = data.gunTime;
-    }
-    if ( data.overallPlace ) {
-        newData.overall_place = data.overallPlace;
-    }
-    if ( data.overallTotal ) {
-        newData.overall_total = data.overallTotal;
-    }
-    if ( data.genderPlace ) {
-        newData.gender_place = data.genderPlace;
-    }
-    if ( data.genderTotal ) {
-        newData.gender_total = data.genderTotal;
-    }
-    if ( data.divisionPlace ) {
-        newData.division_place = data.divisionPlace;
-    }
-    if ( data.divisionTotal ) {
-        newData.division_total = data.divisionTotal;
-    }
-    if ( data.divisionName ) {
-        newData.division_name = data.divisionName;
-    }
-    if ( data.notes ) {
-        newData.notes = data.notes;
-    }
+    let newData = convertDataForDb( data, racesUpdateFields );
     if ( Object.keys( newData ).length === 0 ) {
         return Promise.resolve();
     }
@@ -544,35 +451,16 @@ function convertRacesDbError( err ) {
     return new Error( message );
 
     function convertName( dbFieldName ) {
-        const fieldNameMap = {
-            'username': 'Username',
+        const specialNames = {
             'name': 'Race Name',
             'url': 'URL',
             'results_url': 'Results URL',
-            'date': 'Date',
-            'city': 'City',
-            'state': 'State',
-            'country': 'Country',
-            'distance': 'Distance',
-            'unit': 'Unit',
-            'distance_unit': 'Unit',
-            'bib': 'Bib',
-            'result': 'Result',
-            'result_type': 'Result',
-            'chip_time': 'Chip Time',
-            'gun_time': 'Gun Time',
-            'overall_place': 'Overall Place',
-            'overall_total': 'Overall Total',
-            'gender_place': 'Gender Place',
-            'gender_total': 'Gender Total',
-            'division_place': 'Division Place',
-            'division_total': 'Division Total',
-            'division_name': 'Division Name',
-            'notes': 'Notes'
+            'distance_unit': 'Unit'
         };
-        return fieldNameMap[ dbFieldName ];
+        return specialNames[ dbFieldName ] || _.startCase( dbFieldName );
     }
 }
+
 
 async function deleteAll( ) {
     await db( 'users' )
@@ -583,6 +471,24 @@ async function deleteAll( ) {
 
 async function disconnect( ) {
     await db.destroy( );
+}
+
+function makeSelectList( fields ) {
+    return fields.map( function( field ) {
+        let item = _.snakeCase( field );
+        if ( item.includes( '_' ) ) {
+            item += ' as ' + _.camelCase( field );
+        }
+        return item;
+    } );
+}
+
+function convertDataForDb( data, fields ) {
+    let dbData = _.pick( data, fields );
+    dbData = _.mapKeys( dbData, function( val, key ) {
+        return _.snakeCase( key );
+    } );
+    return dbData;
 }
 
 module.exports = {
