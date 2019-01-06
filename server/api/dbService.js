@@ -24,7 +24,7 @@ const db = knex( {
     asyncStackTraces: true //for development
 } );
 
-const userPublicNonkeyFields = [
+const usersPublicNonkeyFields = [
     'fullName',
     'gender',
     'dateOfBirth'
@@ -32,11 +32,11 @@ const userPublicNonkeyFields = [
 
 const usersPublicFields = [
     'username',
-    ...userPublicNonkeyFields
+    ...usersPublicNonkeyFields
 ];
 
 const usersAllNonkeyFields = [
-    ...userPublicNonkeyFields,
+    ...usersPublicNonkeyFields,
     'email',
     'visibility'
 ];
@@ -473,6 +473,7 @@ async function disconnect( ) {
     await db.destroy( );
 }
 
+
 function makeSelectList( fields ) {
     return fields.map( function( field ) {
         let item = _.snakeCase( field );
@@ -490,6 +491,7 @@ function convertDataForDb( data, fields ) {
     } );
     return dbData;
 }
+
 
 module.exports = {
     getUsers,
