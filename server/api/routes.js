@@ -15,9 +15,9 @@ const router = new Router( );
 
 router.get( '/users/', getUsers );
 router.get( '/users/:username', getUser );
-router.post( '/users/', createUser );
-router.put( '/users/:username', updateUser );
-router.put( '/users/:username/password', changePassword );
+router.post( '/users/', koaBody(), createUser );
+router.put( '/users/:username', koaBody(), updateUser );
+router.put( '/users/:username/password', koaBody(), changePassword );
 router.delete( '/users/:username', deleteUser );
 router.get( '/users/:username/friends', getFriends );
 router.post( '/users/:username/friends/:friend', addFriend );
@@ -25,8 +25,8 @@ router.delete( '/users/:username/friends/:friend', deleteFriend );
 
 router.get( '/users/:username/races/', getUserRaces );
 router.get( '/races/:id', getRace );
-router.post( '/races/', createRace );
-router.put( '/races/:id', updateRace );
+router.post( '/races/', koaBody(), createRace );
+router.put( '/races/:id', koaBody(), updateRace );
 router.delete( '/races/:id', deleteRace );
 
 async function getUsers( ctx ) {
