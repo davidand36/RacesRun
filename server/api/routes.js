@@ -17,12 +17,11 @@ router.get( '/users/', getUsers );
 router.get( '/users/:username', getUser );
 router.post( '/users/', createUser );
 router.put( '/users/:username', updateUser );
-router.put( '/users/:username/password', updatePassword );
-router.put( '/users/:username/email', updateEmail );
+router.put( '/users/:username/password', changePassword );
 router.delete( '/users/:username', deleteUser );
 router.get( '/users/:username/friends', getFriends );
-router.post( '/friends', addFriend );
-router.delete( '/friends/:id', deleteFriend );
+router.post( '/users/:username/friends/:friend', addFriend );
+router.delete( '/users/:username/friends/:friend', deleteFriend );
 
 router.get( '/users/:username/races/', getUserRaces );
 router.get( '/races/:id', getRace );
@@ -76,20 +75,9 @@ async function updateUser( ctx ) {
     }
 }
 
-async function updatePassword( ctx ) {
+async function changePassword( ctx ) {
     try {
-        await dbService.updatePassword( ctx.params.username, ctx.request.body );
-        ctx.response.status = 200;
-    } catch ( err ) {
-        //!!! Handle expected errors
-        console.error( err );
-        ctx.response.status = 500;
-    }
-}
-
-async function updateEmail( ctx ) {
-    try {
-        await dbService.updateEmail( ctx.params.username, ctx.request.body );
+        await dbService.changePassword( ctx.params.username, ctx.request.body );
         ctx.response.status = 200;
     } catch ( err ) {
         //!!! Handle expected errors
@@ -120,8 +108,8 @@ async function getFriends( ctx ) {
 
 async function addFriend( ctx ) {
     try {
-        const id = await dbService.addFriend( ctx.request.body );
-        ctx.response.body = id;
+        const rslt = await dbService.addFriend( ctx.params.username, ctx.params.friend );
+        ctx.response.body = rslt;
     } catch ( err ) {
         //!!! Handle expected errors
         console.error( err );
@@ -131,7 +119,7 @@ async function addFriend( ctx ) {
 
 async function deleteFriend( ctx ) {
     try {
-        await dbService.deleteFriend( ctx.params.id );
+        await dbService.deleteFriend( ctx.params.username, ctx.params.friend );
         ctx.response.status = 200;
     } catch ( err ) {
         console.error( err );
