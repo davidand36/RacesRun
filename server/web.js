@@ -21,7 +21,7 @@ const logger = require( 'koa-logger' );
 const compress = require( 'koa-compress' );
 const Router = require( 'koa-router' );
 const koaStatic = require( 'koa-static' );
-//const apiRoutes = require( './api/routes' );
+const apiRoutes = require( './api/routes' );
 
 const koa = new Koa( );
 const router = new Router( );
@@ -30,7 +30,7 @@ koa.use( helmet( ) );
 koa.use( favicon( './public/favicon.ico' ) );
 koa.use( logger( ) );
 koa.use( compress( ) );
-//router.use( '/api/v1', apiRoutes.routes(), apiRoutes.allowedMethods() );
+router.use( '/api/v1', apiRoutes.routes(), apiRoutes.allowedMethods() );
 koa.use( router.routes() ).use( router.allowedMethods() );
 koa.use( koaStatic( './public') );
 

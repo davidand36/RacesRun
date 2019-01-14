@@ -455,7 +455,8 @@ function convertRacesDbError( err ) {
             'name': 'Race Name',
             'url': 'URL',
             'results_url': 'Results URL',
-            'distance_unit': 'Unit'
+            'distance_unit': 'Unit',
+            'result_type': 'Result'
         };
         return specialNames[ dbFieldName ] || _.startCase( dbFieldName );
     }
@@ -471,6 +472,10 @@ async function deleteAll( ) {
 
 async function disconnect( ) {
     await db.destroy( );
+}
+
+async function reconnect( ) {
+    db.initialize( );
 }
 
 
@@ -511,5 +516,6 @@ module.exports = {
     updateRace,
     deleteRace,
     deleteAll,      //Not for Web API
-    disconnect      //Not for Web API
+    disconnect,     //Not for Web API
+    reconnect       //Not for Web API
 }

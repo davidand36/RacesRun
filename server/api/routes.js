@@ -30,157 +30,200 @@ router.put( '/races/:id', koaBody(), updateRace );
 router.delete( '/races/:id', deleteRace );
 
 async function getUsers( ctx ) {
-    try {
-        const users = await dbService.getUsers();
+    await dbService.getUsers( )
+    .then( users => {
         ctx.response.body = users;
-    } catch( err ) {
+    } )
+    .catch( err => {
         console.error( err );
         ctx.response.status = 500;
-    }
+    } );
 }
 
 async function getUser( ctx ) {
-    try {
-        const user = await dbService.getUser( ctx.params.username );
+    await dbService.getUser( ctx.params.username )
+    .then( user => {
         if ( user ) {
             ctx.response.body = user;
         } else {
             ctx.response.status = 404;
         }
-    } catch( err ) {
+    } )
+    .catch( err => {
         console.error( err );
         ctx.response.status = 500;
-    }
+    } );
 }
 
 async function createUser( ctx ) {
-    try {
-        const username = await dbService.createUser( ctx.request.body );
+    await dbService.createUser( ctx.request.body )
+    .then( username => {
         ctx.response.body = username;
-    } catch ( err ) {
-        //!!! Handle expected errors
-        console.error( err );
-        ctx.response.status = 500;
-    }
+        ctx.response.status = 201;
+    } )
+    .catch( err => {
+        if ( err.message.startsWith( 'Data Error' ) ) {
+            ctx.response.body = { error: err.message };
+            ctx.response.status = 400;
+        } else {
+            console.error( err );
+            ctx.response.status = 500;
+        }
+    } );
 }
 
 async function updateUser( ctx ) {
-    try {
-        await dbService.updateUser( ctx.params.username, ctx.request.body );
+    await dbService.updateUser( ctx.params.username, ctx.request.body )
+    .then( () => {
         ctx.response.status = 200;
-    } catch ( err ) {
-        //!!! Handle expected errors
-        console.error( err );
-        ctx.response.status = 500;
-    }
+    } )
+    .catch( err => {
+        if ( err.message.startsWith( 'Data Error' ) ) {
+            ctx.response.body = { error: err.message };
+            ctx.response.status = 400;
+        } else {
+            console.error( err );
+            ctx.response.status = 500;
+        }
+    } );
 }
 
 async function changePassword( ctx ) {
-    try {
-        await dbService.changePassword( ctx.params.username, ctx.request.body );
+    await dbService.changePassword( ctx.params.username, ctx.request.body )
+    .then( () => {
         ctx.response.status = 200;
-    } catch ( err ) {
-        //!!! Handle expected errors
-        console.error( err );
-        ctx.response.status = 500;
-    }
+    } )
+    .catch( err => {
+        if ( err.message.startsWith( 'Unauthorized' ) ) {
+            ctx.response.status = 401;
+        } else if ( err.message.startsWith( 'Data Error' ) ) {
+            ctx.response.body = { error: err.message };
+            ctx.response.status = 400;
+        } else {
+            console.error( err );
+            ctx.response.status = 500;
+        }
+    } );
 }
 
 async function deleteUser( ctx ) {
-    try {
-        await dbService.deleteUser( ctx.params.username );
+    await dbService.deleteUser( ctx.params.username )
+    .then( () => {
         ctx.response.status = 200;
-    } catch ( err ) {
+    } )
+    .catch( err => {
         console.error( err );
         ctx.response.status = 500;
-    }
+    } );
 }
 
 async function getFriends( ctx ) {
-    try {
-        const friends = await dbService.getFriends( ctx.params.username );
+    await dbService.getFriends( ctx.params.username )
+    .then( friends => {
         ctx.response.body = friends;
-    } catch ( err ) {
+    } )
+    .catch( err => {
         console.error( err );
         ctx.response.status = 500;
-    }
+    } );
 }
 
 async function addFriend( ctx ) {
-    try {
-        const rslt = await dbService.addFriend( ctx.params.username, ctx.params.friend );
+    await dbService.addFriend( ctx.params.username, ctx.params.friend )
+    .then( rslt => {
         ctx.response.body = rslt;
-    } catch ( err ) {
-        //!!! Handle expected errors
-        console.error( err );
-        ctx.response.status = 500;
-    }
+        ctx.response.status = 201;
+    } )
+    .catch( err => {
+        if ( err.message.startsWith( 'Data Error' ) ) {
+            ctx.response.body = { error: err.message };
+            ctx.response.status = 400;
+        } else {
+            console.error( err );
+            ctx.response.status = 500;
+        }
+    } );
 }
 
 async function deleteFriend( ctx ) {
-    try {
-        await dbService.deleteFriend( ctx.params.username, ctx.params.friend );
+    await dbService.deleteFriend( ctx.params.username, ctx.params.friend )
+    .then( () => {
         ctx.response.status = 200;
-    } catch ( err ) {
+    } )
+    .catch( err => {
         console.error( err );
         ctx.response.status = 500;
-    }
+    } );
 }
 
 async function getUserRaces( ctx ) {
-    try {
-        const races = await dbService.getUserRaces( ctx.params.username );
+    await dbService.getUserRaces( ctx.params.username )
+    .then( races => {
         ctx.response.body = races;
-    } catch ( err ) {
+    } )
+    .catch( err => {
         console.error( err );
         ctx.response.status = 500;
-    }
+    } );
 }
 
 async function getRace( ctx ) {
-    try {
-        const race = await dbService.getRace( ctx.params.id );
+    await dbService.getRace( ctx.params.id )
+    .then( race => {
         if ( race ) {
             ctx.response.body = race;
         } else {
             ctx.response.status = 404;
         }
-    } catch ( err ) {
+    } )
+    .catch( err => {
         console.error( err );
         ctx.response.status = 500;
-    }
+    } );
 }
 
 async function createRace( ctx ) {
-    try {
-        const id = await dbService.createRace( ctx.request.body );
+    await dbService.createRace( ctx.request.body )
+    .then( id => {
         ctx.response.body = id;
-    } catch ( err ) {
-        //!!! Handle expected errors
-        console.error( err );
-        ctx.response.status = 500;
-    }
+        ctx.response.status = 201;
+    } )
+    .catch( err => {
+        if ( err.message.startsWith( 'Data Error' ) ) {
+            ctx.response.body = { error: err.message };
+            ctx.response.status = 400;
+        } else {
+            console.error( err );
+            ctx.response.status = 500;
+        }
+    } );
 }
 
 async function updateRace( ctx ) {
-    try {
-        await dbService.updateRace( ctx.params.id, ctx.request.body );
+    await dbService.updateRace( ctx.params.id, ctx.request.body )
+    .then( () => {
         ctx.response.status = 200;
-    } catch ( err ) {
-        //!!! Handle expected errors
-        console.error( err );
-        ctx.response.status = 500;
-    }
+    } )
+    .catch( err => {
+        if ( err.message.startsWith( 'Data Error' ) ) {
+            ctx.response.body = { error: err.message };
+            ctx.response.status = 400;
+        } else {
+            console.error( err );
+            ctx.response.status = 500;
+        }
+    } );
 }
 
 async function deleteRace( ctx ) {
-    try {
-        await dbService.deleteRace( ctx.params.id );
+    await dbService.deleteRace( ctx.params.id )
+    .then( () => {
         ctx.response.status = 200;
-    } catch ( err ) {
+    } )
+    .catch( err => {
         console.error( err );
         ctx.response.status = 500;
-    }
+    } );
 }
 
 module.exports = router;

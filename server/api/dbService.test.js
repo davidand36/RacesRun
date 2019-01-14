@@ -11,6 +11,10 @@ const expect = require( 'chai' ).expect;
 const dbService = require( './dbService' );
 
 describe( 'dbService', function( ) {
+    before( async function () {
+        await dbService.reconnect();
+    } );
+
     beforeEach( async function( ) {
         dbService.deleteAll( );
     } );
@@ -55,7 +59,7 @@ describe( 'dbService', function( ) {
                 error = err;
             } );
 
-            expect( error.message ).to.match( /Data Error: Username is required/ );
+            expect( error.message ).to.equal( 'Data Error: Username is required' );
         } );
 
         it( 'requires fullName', async function( ) {
@@ -69,7 +73,7 @@ describe( 'dbService', function( ) {
                 error = err;
             } );
 
-            expect( error.message ).to.match( /Data Error: Full Name is required/ );
+            expect( error.message ).to.equal( 'Data Error: Full Name is required' );
         } );
 
         it( 'requires password', async function( ) {
@@ -83,12 +87,12 @@ describe( 'dbService', function( ) {
                 error = err;
             } );
 
-            expect( error.message ).to.match( /Data Error: Password is required/ );
+            expect( error.message ).to.equal( 'Data Error: Password is required' );
         } );
 
         it( 'limits the length of username', async function( ) {
             const badData = {
-                username: '123456789012345678901234567890',
+                username: '12345678901234567890123456',
                 fullName: 'Full Name 1',
                 password: 'secret1',
             };
@@ -98,7 +102,7 @@ describe( 'dbService', function( ) {
                 error = err;
             } );
 
-            expect( error.message ).to.match( /Data Error: invalid data/ );
+            expect( error.message ).to.equal( 'Data Error: invalid data' );
         } );
 
         it( 'requires unique usernames', async function( ) {
@@ -119,7 +123,7 @@ describe( 'dbService', function( ) {
                 error = err;
             } );
 
-            expect( error.message ).to.match( /Data Error: This Username is already registered/ );
+            expect( error.message ).to.equal( 'Data Error: This Username is already registered' );
         } );
 
         it( 'requires unique emails', async function () {
@@ -142,7 +146,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: This Email Address is already registered/ );
+            expect( error.message ).to.equal( 'Data Error: This Email Address is already registered' );
         } );
 
         it( 'rejects invalid gender', async function( ) {
@@ -159,7 +163,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Gender/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Gender' );
         } );
 
         it( 'rejects invalid visibility', async function( ) {
@@ -176,7 +180,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Visibility/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Visibility' );
         } );
 
         it( 'rejects future date of birth', async function( ) {
@@ -194,7 +198,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid Date of Birth/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid Date of Birth' );
         } );
     } );
 
@@ -389,7 +393,7 @@ describe( 'dbService', function( ) {
                 error = err;
             } );
 
-            expect( error.message ).to.match( /Unauthorized/ );
+            expect( error.message ).to.equal( 'Unauthorized' );
         } );
 
         it( 'rejects request if no old password given', async function () {
@@ -402,7 +406,7 @@ describe( 'dbService', function( ) {
                 error = err;
             } );
 
-            expect( error.message ).to.match( /Unauthorized/ );
+            expect( error.message ).to.equal( 'Unauthorized' );
         } );
     } );
 
@@ -442,7 +446,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Username is required/ );
+            expect( error.message ).to.equal( 'Data Error: Username is required' );
         } );
 
         it( 'requires friend', async function () {
@@ -452,7 +456,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Friend is required/ );
+            expect( error.message ).to.equal( 'Data Error: Friend is required' );
         } );
 
         it( 'requires the user to exist', async function( ) {
@@ -462,7 +466,7 @@ describe( 'dbService', function( ) {
                 error = err;
             } );
 
-            expect( error.message ).to.match( /Data Error: Username does not refer to a known user/ );
+            expect( error.message ).to.equal( 'Data Error: Username does not refer to a known user' );
         } );
 
         it( 'requires the friend to exist', async function () {
@@ -472,7 +476,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Friend does not refer to a known user/ );
+            expect( error.message ).to.equal( 'Data Error: Friend does not refer to a known user' );
         } );
 
         it( 'does not allow duplicate username-friend pairs', async function( ) {
@@ -483,7 +487,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: This Friend is already listed/ );
+            expect( error.message ).to.equal( 'Data Error: This Friend is already listed' );
         } );
 
         it( 'limits the length of username', async function () {
@@ -493,7 +497,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: invalid data/ );
+            expect( error.message ).to.equal( 'Data Error: invalid data' );
         } );
     } );
 
@@ -598,7 +602,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Username is required/ );
+            expect( error.message ).to.equal( 'Data Error: Username is required' );
         } );
 
         it( 'requires name', async function () {
@@ -615,7 +619,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Race Name is required/ );
+            expect( error.message ).to.equal( 'Data Error: Race Name is required' );
         } );
 
         it( 'requires date', async function () {
@@ -632,7 +636,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Date is required/ );
+            expect( error.message ).to.equal( 'Data Error: Date is required' );
         } );
 
         it( 'requires city', async function () {
@@ -649,7 +653,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: City is required/ );
+            expect( error.message ).to.equal( 'Data Error: City is required' );
         } );
 
         it( 'requires country', async function () {
@@ -666,7 +670,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Country is required/ );
+            expect( error.message ).to.equal( 'Data Error: Country is required' );
         } );
 
         it( 'requires distance', async function () {
@@ -683,7 +687,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Distance is required/ );
+            expect( error.message ).to.equal( 'Data Error: Distance is required' );
         } );
 
         it( 'requires the user to exist', async function () {
@@ -701,7 +705,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Username does not refer to a known user/ );
+            expect( error.message ).to.equal( 'Data Error: Username does not refer to a known user' );
         } );
 
         it( 'limits the length of username', async function () {
@@ -719,7 +723,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: invalid data/ );
+            expect( error.message ).to.equal( 'Data Error: invalid data' );
         } );
 
         it( 'limits the length of city', async function () {
@@ -737,7 +741,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: invalid data/ );
+            expect( error.message ).to.equal( 'Data Error: invalid data' );
         } );
 
         it ( 'rejects future date', async function( ) {
@@ -756,7 +760,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Date/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Date' );
         } );
 
         it( 'rejects negative distance', async function () {
@@ -774,7 +778,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Distance/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Distance' );
         } );
 
         it( 'rejects zero distance', async function () {
@@ -792,7 +796,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Distance/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Distance' );
         } );
 
         it( 'rejects invalid unit', async function( ) {
@@ -811,7 +815,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Unit/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Unit' );
         } );
 
         it( 'rejects invalid result', async function () {
@@ -830,7 +834,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Result/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Result' );
         } );
 
         it( 'rejects negative chip time', async function () {
@@ -849,7 +853,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Chip Time/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Chip Time' );
         } );
 
         it( 'rejects negative gun time', async function () {
@@ -868,7 +872,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Gun Time/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Gun Time' );
         } );
 
         it( 'rejects negative overall place', async function () {
@@ -887,7 +891,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Overall Place/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Overall Place' );
         } );
 
         it( 'rejects overall place > total', async function () {
@@ -907,7 +911,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Overall Place/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Overall Place' );
         } );
 
         it( 'rejects zero gender place', async function () {
@@ -926,7 +930,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Gender Place/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Gender Place' );
         } );
 
         it( 'rejects gender place > total', async function () {
@@ -946,7 +950,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Gender Place/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Gender Place' );
         } );
 
         it( 'rejects negative division place', async function () {
@@ -965,7 +969,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Division Place/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Division Place' );
         } );
 
         it( 'rejects division place > total', async function () {
@@ -985,7 +989,7 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
-            expect( error.message ).to.match( /Data Error: Invalid value for Division Place/ );
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Division Place' );
         } );
     } );
 
