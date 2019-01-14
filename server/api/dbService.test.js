@@ -117,7 +117,7 @@ describe( 'dbService', function( ) {
                 password: 'secret2',
             };
             let error;
-            await dbService.createUser( data1 )
+            await dbService.createUser( data1 );
             await dbService.createUser( data2 )
             .catch( function( err ) {
                 error = err;
@@ -140,7 +140,7 @@ describe( 'dbService', function( ) {
                 password: 'secret2',
             };
             let error;
-            await dbService.createUser( data1 )
+            await dbService.createUser( data1 );
             await dbService.createUser( data2 )
                 .catch( function ( err ) {
                     error = err;
@@ -1042,11 +1042,10 @@ describe( 'dbService', function( ) {
     }
 
     describe( 'getRace', function( ) {
-        let raceId1, raceId2, raceId3;
+        let raceId1, raceId3;
         beforeEach( async function () {
             const ids = await create3UsersAnd3Races( );
             raceId1 = ids[ 0 ];
-            raceId2 = ids[ 1 ];
             raceId3 = ids[ 2 ];
         } );
 
@@ -1068,7 +1067,7 @@ describe( 'dbService', function( ) {
     describe( 'getUserRaces', function( ) {
         beforeEach( create3UsersAnd3Races );
 
-        it( "gets a user's races", async function( ) {
+        it( "gets a user's races", async function( ) { //eslint-disable-line quotes
             const races1 = await dbService.getUserRaces( 'username1' );
             const races2 = await dbService.getUserRaces( 'username2' );
             const races3 = await dbService.getUserRaces( 'username3' );
@@ -1084,12 +1083,11 @@ describe( 'dbService', function( ) {
     } );
 
     describe( 'updateRace', function( ) {
-        let raceId1, raceId2, raceId3;
+        let raceId1, raceId2;
         beforeEach( async function () {
             const ids = await create3UsersAnd3Races();
             raceId1 = ids[ 0 ];
             raceId2 = ids[ 1 ];
-            raceId3 = ids[ 2 ];
         } );
 
         it( 'updates most fields', async function( ) {
@@ -1178,12 +1176,10 @@ describe( 'dbService', function( ) {
     } );
 
     describe( 'deleteRace', function( ) {
-        let raceId1, raceId2, raceId3;
+        let raceId1;
         beforeEach( async function () {
             const ids = await create3UsersAnd3Races();
             raceId1 = ids[ 0 ];
-            raceId2 = ids[ 1 ];
-            raceId3 = ids[ 2 ];
         } );
 
         it( 'removes a race from the DB', async function( ) {

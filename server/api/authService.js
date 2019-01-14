@@ -48,7 +48,7 @@ function validatePassword( password, passHash ) {
                     }
                 } );
             } else {
-                reject( new Error( 'Unexpected algorithm: ', algorithm ) );
+                reject( new Error( 'Unexpected algorithm: ', passHash.algorithm ) );
             }
         } else {
             resolve( false );
@@ -69,4 +69,4 @@ module.exports = {
     hashPassword,
     validatePassword,
     validateUser
-}
+};

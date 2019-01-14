@@ -311,7 +311,7 @@ const racesUpdateFields = [
 const racesNonkeyFields = [
     'username',
     ...racesUpdateFields
-]
+];
 
 const racesAllFields = [
     'id',
@@ -518,4 +518,4 @@ module.exports = {
     deleteAll,      //Not for Web API
     disconnect,     //Not for Web API
     reconnect       //Not for Web API
-}
+};

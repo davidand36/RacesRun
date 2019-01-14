@@ -441,7 +441,6 @@ describe( 'apiRouter', function () {
                 currentPassword: 'wrongpass1',
                 newPassword: 'newpassword1'
             };
-            let error;
             const response = await request( {
                 method: 'PUT',
                 url: apiUrl + '/users/' + 'username1' + '/password',
@@ -458,7 +457,6 @@ describe( 'apiRouter', function () {
             const data = {
                 newPassword: 'newpassword1'
             };
-            let error;
             const response = await request( {
                 method: 'PUT',
                 url: apiUrl + '/users/' + 'username1' + '/password',
@@ -1269,7 +1267,7 @@ describe( 'apiRouter', function () {
     describe( 'GET /users/:username/races/', function( ) {
         beforeEach( create3UsersAnd3Races );
 
-        it( "gets a user's races", async function () {
+        it( "gets a user's races", async function () { //eslint-disable-line quotes
             const races1 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username1' + '/races',
@@ -1301,11 +1299,10 @@ describe( 'apiRouter', function () {
     } );
 
     describe( 'GET /races/:id', function( ) {
-        let raceId1, raceId2, raceId3;
+        let raceId1, raceId3;
         beforeEach( async function () {
             const ids = await create3UsersAnd3Races();
             raceId1 = ids[ 0 ];
-            raceId2 = ids[ 1 ];
             raceId3 = ids[ 2 ];
         } );
 
@@ -1339,12 +1336,11 @@ describe( 'apiRouter', function () {
     } );
 
     describe( 'PUT /races/:id', function( ) {
-        let raceId1, raceId2, raceId3;
+        let raceId1, raceId2;
         beforeEach( async function () {
             const ids = await create3UsersAnd3Races();
             raceId1 = ids[ 0 ];
             raceId2 = ids[ 1 ];
-            raceId3 = ids[ 2 ];
         } );
 
         it( 'updates most fields', async function () {
@@ -1464,12 +1460,10 @@ describe( 'apiRouter', function () {
     } );
 
     describe( 'DELETE /races/:id', function( ) {
-        let raceId1, raceId2, raceId3;
+        let raceId1;
         beforeEach( async function () {
             const ids = await create3UsersAnd3Races();
             raceId1 = ids[ 0 ];
-            raceId2 = ids[ 1 ];
-            raceId3 = ids[ 2 ];
         } );
 
         it( 'removes a race from the DB', async function () {
