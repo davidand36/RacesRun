@@ -10,7 +10,7 @@
 require( 'dotenv' ).config();
 const _ = require( 'lodash' );
 const knex = require( 'knex' );
-const authService = require( './authService' );
+const authService = require( '../auth/authService' );
 
 const db = knex( {
     client: 'pg',

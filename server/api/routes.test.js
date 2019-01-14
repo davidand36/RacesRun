@@ -372,7 +372,7 @@ describe( 'apiRouter', function () {
         } );
 
         it( 'does not change password', async function () {
-            const authService = require( './authService' );
+            const authService = require( '../auth/authService' );
             const newData = {
                 password: 'newpassword1'
             };
@@ -420,7 +420,7 @@ describe( 'apiRouter', function () {
         beforeEach( create3Users );
 
         it( 'changes the password when the old one is supplied', async function () {
-            const authService = require( './authService' );
+            const authService = require( '../auth/authService' );
             const data = {
                 currentPassword: 'secret1',
                 newPassword: 'newpassword1'

@@ -313,7 +313,7 @@ describe( 'dbService', function( ) {
         } );
 
         it( 'does not change password', async function () {
-            const authService = require( './authService' );
+            const authService = require( '../auth/authService' );
             const newData = {
                 password: 'newpassword1'
             };
@@ -347,7 +347,7 @@ describe( 'dbService', function( ) {
         beforeEach( create3Users );
 
         it( 'changes the password', async function( ) {
-            const authService = require( './authService' );
+            const authService = require( '../auth/authService' );
             await dbService.updatePassword( 'username1', 'newpassword1' );
             const valRslt1 = await authService.validateUser( 'username1', 'secret1' );
             const valRslt2 = await authService.validateUser( 'username1', 'newpassword1' );
@@ -357,7 +357,7 @@ describe( 'dbService', function( ) {
         } );
 
         it( 'does not affect other users', async function( ) {
-            const authService = require( './authService' );
+            const authService = require( '../auth/authService' );
             await dbService.updatePassword( 'username1', 'newpassword1' );
             const valRslt1 = await authService.validateUser( 'username2', 'secret2' );
             const valRslt2 = await authService.validateUser( 'username2', 'newpassword1' );
@@ -371,7 +371,7 @@ describe( 'dbService', function( ) {
         beforeEach( create3Users );
 
         it( 'changes the password when the old one is supplied', async function( ) {
-            const authService = require( './authService' );
+            const authService = require( '../auth/authService' );
             const data = {
                 currentPassword: 'secret1',
                 newPassword: 'newpassword1'

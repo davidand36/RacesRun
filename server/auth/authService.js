@@ -1,5 +1,5 @@
 /*
-    api/authService.js
+    auth/authService.js
 
     Authentication/authorization service
 */
@@ -58,7 +58,7 @@ function validatePassword( password, passHash ) {
 
 function validateUser( username, password ) {
     return new Promise( async function( resolve, reject ) {
-        const dbService = require( './dbService' );
+        const dbService = require( '../api/dbService' );
         const passHash = await dbService.getPassHash( username );
         return validatePassword( password, passHash )
             .then( resolve, reject );

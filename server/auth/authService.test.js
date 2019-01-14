@@ -47,9 +47,15 @@ describe( 'authService', function () {
     } );
 
     describe( 'validateUser', function( ) {
-        const dbService = require( './dbService' );
+        const dbService = require( '../api/dbService' );
         let username;
         const validPassword = 'çok iyi bir şifre';
+
+        before( async function() {
+            await dbService.reconnect();
+        } );
+
+        after( dbService.disconnect );
 
         beforeEach( async function( ) {
             await dbService.deleteAll( );
