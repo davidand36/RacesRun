@@ -5,6 +5,8 @@
 */
 
 const crypto = require( 'crypto' );
+const passport = require( 'koa-passport' );
+const LocalStrategy = require( 'passport-local' ).Strategy;
 
 function hashPassword( password ) {
     return new Promise( function( resolve, reject ) {
@@ -64,6 +66,25 @@ function validateUser( username, password ) {
             .then( resolve, reject );
     } );
 }
+
+passport.use( new LocalStrategy( function( username, password, done) {
+    validateUser( username, password )
+    .then( function( valid ) {
+        return done( null, valid ? username : false );
+    } )
+    .catch( function( err ) {
+        console.error( 'validateUser error: ', err );
+        return done( err );
+    } );
+} ) );
+
+passport.serializeUser( function( username, done ) {
+    done( null, username );
+} );
+
+passport.deserializeUser( function( username, done ) {
+    done( null, username );
+} );
 
 module.exports = {
     hashPassword,

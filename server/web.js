@@ -18,18 +18,28 @@ const Koa = require( 'koa' );
 const helmet = require( 'koa-helmet' );
 const favicon = require( 'koa-favicon' );
 const logger = require( 'koa-logger' );
+const session = require( 'koa-session' );
+const passport = require( 'koa-passport' );
 const compress = require( 'koa-compress' );
 const Router = require( 'koa-router' );
 const koaStatic = require( 'koa-static' );
+require( './auth/authService' );
+const authRoutes = require( './auth/routes' );
 const apiRoutes = require( './api/routes' );
 
 const koa = new Koa( );
 const router = new Router( );
 
+koa.keys = [ process.env.SIGNED_COOKIE_KEY ];
+
 koa.use( helmet( ) );
 koa.use( favicon( './public/favicon.ico' ) );
 koa.use( logger( ) );
+koa.use( session( {}, koa ) );
+koa.use( passport.initialize() );
+koa.use( passport.session() );
 koa.use( compress( ) );
+router.use( '/auth', authRoutes.routes(), authRoutes.allowedMethods() );
 router.use( '/api/v1', apiRoutes.routes(), apiRoutes.allowedMethods() );
 koa.use( router.routes() ).use( router.allowedMethods() );
 koa.use( koaStatic( './public') );
