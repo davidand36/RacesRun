@@ -15,17 +15,44 @@ const request = require( 'request-promise-native' );
 const dbService = require( './dbService' );
 
 const apiUrl = 'http://localhost:' + process.env.WEB_PORT + '/api/v1';
+const authUrl = 'http://localhost:' + process.env.WEB_PORT + '/auth';
 
-describe( 'apiRouter', function () {
+describe( 'apiRouter', function( ) {
     before( async function( ) {
         await dbService.reconnect( );
     } );
 
-    beforeEach( async function () {
+    beforeEach( async function( ) {
         await dbService.deleteAll( );
     } );
 
+    afterEach( async function( ) {
+        await logOut( );
+    } );
+
     after( dbService.disconnect );
+
+
+    async function logInAsUserNum( userNum ) {
+        await request( {
+            method: 'POST',
+            url: authUrl + '/login',
+            body: {
+                username: 'username' + userNum,
+                password: 'secret' + userNum
+            },
+            json: true,
+            jar: true //enables cookies
+        } );
+    }
+
+    async function logOut() {
+        await request( {
+            method: 'POST',
+            url: authUrl + '/logout',
+            jar: true
+        } );
+    }
 
 
     describe( 'POST /users', function( ) {
@@ -50,7 +77,7 @@ describe( 'apiRouter', function () {
             expect( response.body ).to.equal( 'username1' );
         } );
 
-        it( 'does not require all fields', async function () {
+        it( 'does not require all fields', async function( ) {
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/users',
@@ -67,7 +94,7 @@ describe( 'apiRouter', function () {
             expect( response.body ).to.equal( 'username1' );
         } );
 
-        it( 'returns 400 error if no username provided', async function () {
+        it( 'returns 400 error if no username provided', async function( ) {
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/users',
@@ -83,7 +110,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Username is required' );
         } );
 
-        it( 'returns 400 error if no fullName provided', async function () {
+        it( 'returns 400 error if no fullName provided', async function( ) {
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/users',
@@ -99,7 +126,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Full Name is required' );
         } );
 
-        it( 'returns 400 error if no password provided', async function () {
+        it( 'returns 400 error if no password provided', async function( ) {
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/users',
@@ -115,7 +142,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Password is required' );
         } );
 
-        it( 'limits the length of username', async function () {
+        it( 'limits the length of username', async function( ) {
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/users',
@@ -132,7 +159,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: invalid data' );
         } );
 
-        it( 'requires unique usernames', async function () {
+        it( 'requires unique usernames', async function( ) {
             await request( {
                 method: 'POST',
                 url: apiUrl + '/users',
@@ -159,7 +186,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: This Username is already registered' );
         } );
 
-        it( 'requires unique emails', async function () {
+        it( 'requires unique emails', async function( ) {
             await request( {
                 method: 'POST',
                 url: apiUrl + '/users',
@@ -188,7 +215,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: This Email Address is already registered' );
         } );
 
-        it( 'rejects invalid gender', async function () {
+        it( 'rejects invalid gender', async function( ) {
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/users',
@@ -206,7 +233,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Gender' );
         } );
 
-        it( 'rejects invalid visibility', async function () {
+        it( 'rejects invalid visibility', async function( ) {
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/users',
@@ -225,7 +252,7 @@ describe( 'apiRouter', function () {
         } );
     } );
 
-    async function create3Users() {
+    async function create3Users( ) {
         await request( {
             method: 'POST',
             url: apiUrl + '/users',
@@ -246,7 +273,7 @@ describe( 'apiRouter', function () {
             body: {
                 username: 'username2',
                 fullName: 'Full Name 2',
-                password: 'secret2',
+                password: 'secret2'
             },
             json: true
         } );
@@ -257,6 +284,7 @@ describe( 'apiRouter', function () {
                 username: 'username3',
                 fullName: 'Full Name 3',
                 password: 'secret3',
+                visibility: 'users'
             },
             json: true
         } );
@@ -265,22 +293,24 @@ describe( 'apiRouter', function () {
     describe( 'GET /users', function( ) {
         beforeEach( create3Users );
 
-        it( 'gets all users in the DB', async function () {
+        it( 'gets all users in the DB', async function( ) {
             const users = await request( {
                 method: 'GET',
                 url: apiUrl + '/users',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( users.length ).to.equal( 3 );
             expect( users[ 1 ].fullName ).to.equal( 'Full Name 2' );
         } );
 
-        it( 'does not get email addresses', async function () {
+        it( 'does not get email addresses', async function( ) {
             const users = await request( {
                 method: 'GET',
                 url: apiUrl + '/users',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( users[ 0 ].email ).to.be.undefined;
@@ -290,33 +320,66 @@ describe( 'apiRouter', function () {
     describe( 'GET /users/:username', function( ) {
         beforeEach( create3Users );
 
-        it( 'gets user info by username', async function () {
+        it( 'returns 403 if not logged in', async function( ) {
+            const response = await request( {
+                method: 'GET',
+                url: apiUrl + '/users/' + 'username1',
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'returns 403 if not logged in as a different user', async function( ) {
+            await logInAsUserNum( 2 );
+            const response = await request( {
+                method: 'GET',
+                url: apiUrl + '/users/' + 'username1',
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'gets user info by username', async function( ) {
+            await logInAsUserNum( 2 );
             const user = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username2',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( user.fullName ).to.equal( 'Full Name 2' );
         } );
 
-        it( 'returns 404 for non-existent username', async function () {
+        it( 'returns 403 for non-existent username', async function( ) {
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'nosuchuser',
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
 
-            expect( response.statusCode ).to.equal( 404 );
+            expect( response.statusCode ).to.equal( 403 );
         } );
 
-        it( 'gets email address if present', async function () {
+        it( 'gets email address if present', async function( ) {
+            await logInAsUserNum( 1 );
             const user = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username1',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( user.email ).to.equal( 'username1@example.com' );
@@ -326,7 +389,7 @@ describe( 'apiRouter', function () {
     describe( 'PUT /users/:username', function( ) {
         beforeEach( create3Users );
 
-        it( 'updates most fields', async function () {
+        it( 'returns 403 if not logged in', async function( ) {
             const newData = {
                 fullName: 'New Name 1',
                 gender: 'female',
@@ -334,16 +397,62 @@ describe( 'apiRouter', function () {
                 email: 'username1@foobar.org',
                 visibilty: 'users'
             };
+            const response = await request( {
+                method: 'PUT',
+                url: apiUrl + '/users/' + 'username1',
+                body: newData,
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'returns 403 if not logged in as a different user', async function( ) {
+            const newData = {
+                fullName: 'New Name 1',
+                gender: 'female',
+                dateOfBirth: new Date( 1999, 9, 9 ),
+                email: 'username1@foobar.org',
+                visibilty: 'users'
+            };
+            await logInAsUserNum( 2 );
+            const response = await request( {
+                method: 'PUT',
+                url: apiUrl + '/users/' + 'username1',
+                body: newData,
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'updates most fields', async function( ) {
+            const newData = {
+                fullName: 'New Name 1',
+                gender: 'female',
+                dateOfBirth: new Date( 1999, 9, 9 ),
+                email: 'username1@foobar.org',
+                visibilty: 'users'
+            };
+            await logInAsUserNum( 1 );
             await request( {
                 method: 'PUT',
                 url: apiUrl + '/users/' + 'username1',
                 body: newData,
-                json: true
+                json: true,
+                jar: true
             } );
             const user = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username1',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( user.fullName ).to.equal( newData.fullName );
@@ -352,35 +461,40 @@ describe( 'apiRouter', function () {
             expect( user.email ).to.equal( newData.email );
         } );
 
-        it( 'does not change username', async function () {
+        it( 'does not change username', async function( ) {
             const newData = {
                 username: 'newusername1'
             };
+            await logInAsUserNum( 1 );
             await request( {
                 method: 'PUT',
                 url: apiUrl + '/users/' + 'username1',
                 body: newData,
-                json: true
+                json: true,
+                jar: true
             } );
             const user = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username1',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( user.username ).to.equal( 'username1' );
         } );
 
-        it( 'does not change password', async function () {
+        it( 'does not change password', async function( ) {
             const authService = require( '../auth/authService' );
             const newData = {
                 password: 'newpassword1'
             };
+            await logInAsUserNum( 1 );
             await request( {
                 method: 'PUT',
                 url: apiUrl + '/users/' + 'username1',
                 body: newData,
-                json: true
+                json: true,
+                jar: true
             } );
             const valRslt1 = await authService.validateUser( 'username1', 'secret1' );
             const valRslt2 = await authService.validateUser( 'username1', 'newpassword1' );
@@ -389,7 +503,7 @@ describe( 'apiRouter', function () {
             expect( valRslt2 ).to.be.false;
         } );
 
-        it( 'does not affect other users', async function () {
+        it( 'does not affect other users', async function( ) {
             const newData = {
                 fullName: 'New Name 1',
                 gender: 'female',
@@ -397,16 +511,20 @@ describe( 'apiRouter', function () {
                 email: 'username1@foobar.org',
                 visibilty: 'users'
             };
+            await logInAsUserNum( 1 );
             await request( {
                 method: 'PUT',
                 url: apiUrl + '/users/' + 'username1',
                 body: newData,
-                json: true
+                json: true,
+                jar: true
             } );
+            await logInAsUserNum( 2 );
             const user2 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username2',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( user2.fullName ).to.equal( 'Full Name 2' );
@@ -414,31 +532,27 @@ describe( 'apiRouter', function () {
             expect( user2.dateOfBirth ).to.be.null;
             expect( user2.email ).to.be.null;
         } );
+
+        it( 'returns 403 if not logged in', async function( ) {
+            const response = await request( {
+                method: 'GET',
+                url: apiUrl + '/users/' + 'username1',
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
     } );
 
     describe( 'PUT /users/:username/password', function( ) {
         beforeEach( create3Users );
 
-        it( 'changes the password when the old one is supplied', async function () {
-            const authService = require( '../auth/authService' );
+        it( 'returns 403 if not logged in', async function( ) {
             const data = {
                 currentPassword: 'secret1',
-                newPassword: 'newpassword1'
-            };
-            await request( {
-                method: 'PUT',
-                url: apiUrl + '/users/' + 'username1' + '/password',
-                body: data,
-                json: true
-            } );
-            const valRslt = await authService.validateUser( 'username1', 'newpassword1' );
-
-            expect( valRslt ).to.be.true;
-        } );
-
-        it( 'returns 401 if wrong old password given', async function () {
-            const data = {
-                currentPassword: 'wrongpass1',
                 newPassword: 'newpassword1'
             };
             const response = await request( {
@@ -446,6 +560,64 @@ describe( 'apiRouter', function () {
                 url: apiUrl + '/users/' + 'username1' + '/password',
                 body: data,
                 json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'returns 403 if not logged in as a different user', async function( ) {
+            const data = {
+                currentPassword: 'secret1',
+                newPassword: 'newpassword1'
+            };
+            await logInAsUserNum( 2 );
+            const response = await request( {
+                method: 'PUT',
+                url: apiUrl + '/users/' + 'username1' + '/password',
+                body: data,
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'changes the password when the old one is supplied', async function( ) {
+            const authService = require( '../auth/authService' );
+            const data = {
+                currentPassword: 'secret1',
+                newPassword: 'newpassword1'
+            };
+            await logInAsUserNum( 1 );
+            await request( {
+                method: 'PUT',
+                url: apiUrl + '/users/' + 'username1' + '/password',
+                body: data,
+                json: true,
+                jar: true
+            } );
+            const valRslt = await authService.validateUser( 'username1', 'newpassword1' );
+
+            expect( valRslt ).to.be.true;
+        } );
+
+        it( 'returns 401 if wrong old password given', async function( ) {
+            const data = {
+                currentPassword: 'wrongpass1',
+                newPassword: 'newpassword1'
+            };
+            await logInAsUserNum( 1 );
+            const response = await request( {
+                method: 'PUT',
+                url: apiUrl + '/users/' + 'username1' + '/password',
+                body: data,
+                json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -453,15 +625,17 @@ describe( 'apiRouter', function () {
             expect( response.statusCode ).to.equal( 401 );
         } );
 
-        it( 'returns 401 if no old password given', async function () {
+        it( 'returns 401 if no old password given', async function( ) {
             const data = {
                 newPassword: 'newpassword1'
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'PUT',
                 url: apiUrl + '/users/' + 'username1' + '/password',
                 body: data,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -473,68 +647,101 @@ describe( 'apiRouter', function () {
     describe( 'DELETE  /users/:username', function( ) {
         beforeEach( create3Users );
 
-        it( 'removes a user', async function () {
-            await request( {
+        it( 'returns 403 if not logged in', async function( ) {
+            const response = await request( {
                 method: 'DELETE',
-                url: apiUrl + '/users/' + 'username1'
-            } );
-            const users = await request( {
-                method: 'GET',
-                url: apiUrl + '/users',
-                json: true
+                url: apiUrl + '/users/' + 'username1',
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
             } );
 
-            expect( users.length ).to.equal( 2 );
-            expect( users[ 0 ].username ).to.equal( 'username2' );
+            expect( response.statusCode ).to.equal( 403 );
         } );
 
-        it( 'succeeds if user already does not exist', async function () {
+        it( 'returns 403 if not logged in as a different user', async function( ) {
+            await logInAsUserNum( 2 );
+            const response = await request( {
+                method: 'DELETE',
+                url: apiUrl + '/users/' + 'username1',
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'removes a user', async function( ) {
+            await logInAsUserNum( 1 );
             await request( {
                 method: 'DELETE',
-                url: apiUrl + '/users/' + 'nosuchuser'
+                url: apiUrl + '/users/' + 'username1',
+                jar: true
             } );
+            await logInAsUserNum( 2 );
             const users = await request( {
                 method: 'GET',
                 url: apiUrl + '/users',
-                json: true
+                json: true,
+                jar: true
             } );
 
-            expect( users.length ).to.equal( 3 );
+            expect( users.length ).to.equal( 2 ); //!!!
+            expect( users[ 0 ].username ).to.equal( 'username2' );
         } );
     } );
 
     describe( 'POST /users/:username/friends/:friend', function( ) {
         beforeEach( create3Users );
 
-        it( 'adds a friend', async function () {
+        it( 'returns 403 if not logged in', async function( ) {
+            const response = await request( {
+                method: 'POST',
+                url: apiUrl + '/users/' + 'username1' + '/friends/' + 'username3',
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'returns 403 if not logged in as a different user', async function( ) {
+            await logInAsUserNum( 2 );
+            const response = await request( {
+                method: 'POST',
+                url: apiUrl + '/users/' + 'username1' + '/friends/' + 'username3',
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'adds a friend', async function( ) {
+            await logInAsUserNum( 1 );
             const rslt = await request( {
                 method: 'POST',
                 url: apiUrl + '/users/' + 'username1' + '/friends/' + 'username3',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( rslt.username ).to.equal( 'username1' );
             expect( rslt.friend ).to.equal( 'username3' );
         } );
 
-        it( 'requires the user to exist', async function () {
-            const response = await request( {
-                method: 'POST',
-                url: apiUrl + '/users/' + 'nosuchuser' + '/friends/' + 'username3',
-                json: true,
-                resolveWithFullResponse: true,
-                simple: false
-            } );
-
-            expect( response.statusCode ).to.equal( 400 );
-            expect( response.body.error ).to.equal( 'Data Error: Username does not refer to a known user' );
-        } );
-
-        it( 'requires the friend to exist', async function () {
+        it( 'requires the friend to exist', async function( ) {
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/users/' + 'username1' + '/friends/' + 'nosuchfriend',
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -543,16 +750,19 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Friend does not refer to a known user' );
         } );
 
-        it( 'does not allow duplicate username-friend pairs', async function () {
+        it( 'does not allow duplicate username-friend pairs', async function( ) {
+            await logInAsUserNum( 1 );
             await request( {
                 method: 'POST',
                 url: apiUrl + '/users/' + 'username1' + '/friends/' + 'username3',
-                json: true
+                json: true,
+                jar: true
             } );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/users/' + 'username1' + '/friends/' + 'username3',
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -560,11 +770,13 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: This Friend is already listed' );
         } );
 
-        it( 'limits the length of username', async function () {
+        it( 'limits the length of friend username', async function( ) {
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
-                url: apiUrl + '/users/' + '123456789012345678901234567890' + '/friends/' + 'username3',
+                url: apiUrl + '/users/' + 'username1' + '/friends/' + '123456789012345678901234567890',
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -575,38 +787,77 @@ describe( 'apiRouter', function () {
 
     async function create3UsersAnd3Friends() {
         await create3Users();
+        await logInAsUserNum( 1 );
         await request( {
             method: 'POST',
-            url: apiUrl + '/users/' + 'username1' + '/friends/' + 'username3'
+            url: apiUrl + '/users/' + 'username1' + '/friends/' + 'username3',
+            jar: true
+        } );
+        await logInAsUserNum( 2 );
+        await request( {
+            method: 'POST',
+            url: apiUrl + '/users/' + 'username2' + '/friends/' + 'username1',
+            jar: true
         } );
         await request( {
             method: 'POST',
-            url: apiUrl + '/users/' + 'username2' + '/friends/' + 'username1'
+            url: apiUrl + '/users/' + 'username2' + '/friends/' + 'username3',
+            jar: true
         } );
-        await request( {
-            method: 'POST',
-            url: apiUrl + '/users/' + 'username2' + '/friends/' + 'username3'
-        } );
+        await logOut();
     }
 
     describe( 'GET /users/:username/friends', function( ) {
         beforeEach( create3UsersAnd3Friends );
 
-        it( 'gets a list of friends of user', async function () {
+        it( 'returns 403 if not logged in', async function( ) {
+            const response = await request( {
+                method: 'GET',
+                url: apiUrl + '/users/' + 'username1' + '/friends/',
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'returns 403 if not logged in as a different user', async function( ) {
+            await logInAsUserNum( 2 );
+            const response = await request( {
+                method: 'GET',
+                url: apiUrl + '/users/' + 'username1' + '/friends/',
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'gets a list of friends of user', async function( ) {
+            await logInAsUserNum( 1 );
             const friends1 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username1' + '/friends/',
-                json: true
+                json: true,
+                jar: true
             } );
+            await logInAsUserNum( 2 );
             const friends2 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username2' + '/friends/',
-                json: true
+                json: true,
+                jar: true
             } );
+            await logInAsUserNum( 3 );
             const friends3 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username3' + '/friends/',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( friends1.length ).to.equal( 1 );
@@ -616,32 +867,63 @@ describe( 'apiRouter', function () {
         } );
     } );
 
-    describe( 'DELTE /users/:username/friends/:friend', function( ) {
+    describe( 'DELETE /users/:username/friends/:friend', function( ) {
         beforeEach( create3UsersAnd3Friends );
 
-        it( 'removes a friend', async function () {
+        it( 'returns 403 if not logged in', async function( ) {
+            const response = await request( {
+                method: 'DELETE',
+                url: apiUrl + '/users/' + 'username2' + '/friends/' + 'username1',
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'returns 403 if not logged in as a different user', async function( ) {
+            await logInAsUserNum( 1 );
+            const response = await request( {
+                method: 'DELETE',
+                url: apiUrl + '/users/' + 'username2' + '/friends/' + 'username1',
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'removes a friend', async function( ) {
+            await logInAsUserNum( 2 );
             await request( {
                 method: 'DELETE',
-                url: apiUrl + '/users/' + 'username2' + '/friends/' + 'username1'
+                url: apiUrl + '/users/' + 'username2' + '/friends/' + 'username1',
+                jar: true
             } );
             const friends2 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username2' + '/friends/',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( friends2.length ).to.equal( 1 );
         } );
 
-        it( 'succeeds if the friend record does not exist', async function () {
+        it( 'succeeds if the friend record does not exist', async function( ) {
+            await logInAsUserNum( 1 );
             await request( {
                 method: 'DELETE',
-                url: apiUrl + '/users/' + 'username1' + '/friends/' + 'username2'
+                url: apiUrl + '/users/' + 'username1' + '/friends/' + 'username2',
+                jar: true
             } );
             const friends1 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username1' + '/friends/',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( friends1.length ).to.equal( 1 );
@@ -651,7 +933,52 @@ describe( 'apiRouter', function () {
     describe( 'POST /races/', function( ) {
         beforeEach( create3Users );
 
-        it( 'adds a race to the DB', async function () {
+        it( 'returns 403 if not logged in', async function( ) {
+            const minimalData = {
+                username: 'username1',
+                name: 'Race Name 1',
+                date: new Date( 2015, 5, 30 ),
+                city: 'Sometown',
+                country: 'US',
+                distance: 0.5
+            };
+            const response = await request( {
+                method: 'POST',
+                url: apiUrl + '/races',
+                body: minimalData,
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'returns 403 if logged in as a different user', async function( ) {
+            const minimalData = {
+                username: 'username1',
+                name: 'Race Name 1',
+                date: new Date( 2015, 5, 30 ),
+                city: 'Sometown',
+                country: 'US',
+                distance: 0.5
+            };
+            await logInAsUserNum( 2 );
+            const response = await request( {
+                method: 'POST',
+                url: apiUrl + '/races',
+                body: minimalData,
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'adds a race to the DB', async function( ) {
             const fullData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -676,17 +1003,19 @@ describe( 'apiRouter', function () {
                 divisionName: 'M 60-64',
                 notes: 'This was my first marathon. Nice and flat.'
             };
+            await logInAsUserNum( 1 );
             const id = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: fullData,
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( id ).to.be.above( 0 );
         } );
 
-        it( 'does not require all fields', async function () {
+        it( 'does not require all fields', async function( ) {
             const minimalData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -695,17 +1024,19 @@ describe( 'apiRouter', function () {
                 country: 'US',
                 distance: 0.5
             };
+            await logInAsUserNum( 1 );
             const id = await await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: minimalData,
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( id ).to.be.above( 0 );
         } );
 
-        it( 'requires username', async function () {
+        it( 'requires username', async function( ) {
             const badData = {
                 name: 'Race Name 1',
                 date: new Date( 2015, 5, 30 ),
@@ -713,20 +1044,21 @@ describe( 'apiRouter', function () {
                 country: 'US',
                 distance: 0.5
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
 
-            expect( response.statusCode ).to.equal( 400 );
-            expect( response.body.error ).to.equal( 'Data Error: Username is required' );
+            expect( response.statusCode ).to.equal( 403 );
         } );
 
-        it( 'requires name', async function () {
+        it( 'requires name', async function( ) {
             const badData = {
                 username: 'username1',
                 date: new Date( 2015, 5, 30 ),
@@ -734,11 +1066,13 @@ describe( 'apiRouter', function () {
                 country: 'US',
                 distance: 0.5
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -747,7 +1081,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Race Name is required' );
         } );
 
-        it( 'requires date', async function () {
+        it( 'requires date', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -755,11 +1089,13 @@ describe( 'apiRouter', function () {
                 country: 'US',
                 distance: 0.5
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -768,7 +1104,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Date is required' );
         } );
 
-        it( 'requires city', async function () {
+        it( 'requires city', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -776,11 +1112,13 @@ describe( 'apiRouter', function () {
                 country: 'US',
                 distance: 0.5
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -789,7 +1127,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: City is required' );
         } );
 
-        it( 'requires country', async function () {
+        it( 'requires country', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -797,11 +1135,13 @@ describe( 'apiRouter', function () {
                 city: 'Sometown',
                 distance: 0.5
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -810,7 +1150,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Country is required' );
         } );
 
-        it( 'requires distance', async function () {
+        it( 'requires distance', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -818,11 +1158,13 @@ describe( 'apiRouter', function () {
                 city: 'Sometown',
                 country: 'US'
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -831,7 +1173,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Distance is required' );
         } );
 
-        it( 'requires the user to exist', async function () {
+        it( 'requires the user to exist', async function( ) {
             const badData = {
                 username: 'nosuchuser',
                 name: 'Race Name 1',
@@ -840,20 +1182,21 @@ describe( 'apiRouter', function () {
                 country: 'US',
                 distance: 0.5
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
 
-            expect( response.statusCode ).to.equal( 400 );
-            expect( response.body.error ).to.equal( 'Data Error: Username does not refer to a known user' );
+            expect( response.statusCode ).to.equal( 403 );
         } );
 
-        it( 'limits the length of username', async function () {
+        it( 'limits the length of username', async function( ) {
             const badData = {
                 username: '123456789012345678901234567890',
                 name: 'Race Name 1',
@@ -862,20 +1205,21 @@ describe( 'apiRouter', function () {
                 country: 'US',
                 distance: 0.5
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
 
-            expect( response.statusCode ).to.equal( 400 );
-            expect( response.body.error ).to.equal( 'Data Error: invalid data' );
+            expect( response.statusCode ).to.equal( 403 );
         } );
 
-        it( 'limits the length of city', async function () {
+        it( 'limits the length of city', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -884,11 +1228,13 @@ describe( 'apiRouter', function () {
                 country: 'US',
                 distance: 0.5
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -897,7 +1243,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: invalid data' );
         } );
 
-        it( 'rejects future date', async function () {
+        it( 'rejects future date', async function( ) {
             const thisYear = new Date().getFullYear();
             const badData = {
                 username: 'username1',
@@ -907,11 +1253,13 @@ describe( 'apiRouter', function () {
                 country: 'US',
                 distance: 0.5
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -920,7 +1268,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Date' );
         } );
 
-        it( 'rejects negative distance', async function () {
+        it( 'rejects negative distance', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -929,11 +1277,13 @@ describe( 'apiRouter', function () {
                 country: 'US',
                 distance: -10
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -942,7 +1292,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Distance' );
         } );
 
-        it( 'rejects zero distance', async function () {
+        it( 'rejects zero distance', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -951,11 +1301,13 @@ describe( 'apiRouter', function () {
                 country: 'US',
                 distance: 0
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -964,7 +1316,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Distance' );
         } );
 
-        it( 'rejects invalid unit', async function () {
+        it( 'rejects invalid unit', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -974,11 +1326,13 @@ describe( 'apiRouter', function () {
                 distance: 0.5,
                 unit: 'yards'
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -987,7 +1341,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Unit' );
         } );
 
-        it( 'rejects invalid result', async function () {
+        it( 'rejects invalid result', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -997,11 +1351,13 @@ describe( 'apiRouter', function () {
                 distance: 0.5,
                 result: 'fail'
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -1010,7 +1366,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Result' );
         } );
 
-        it( 'rejects negative chip time', async function () {
+        it( 'rejects negative chip time', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -1020,11 +1376,13 @@ describe( 'apiRouter', function () {
                 distance: 0.5,
                 chipTime: -3600
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -1033,7 +1391,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Chip Time' );
         } );
 
-        it( 'rejects negative gun time', async function () {
+        it( 'rejects negative gun time', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -1043,11 +1401,13 @@ describe( 'apiRouter', function () {
                 distance: 0.5,
                 gunTime: -600
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -1056,7 +1416,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Gun Time' );
         } );
 
-        it( 'rejects negative overall place', async function () {
+        it( 'rejects negative overall place', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -1066,11 +1426,13 @@ describe( 'apiRouter', function () {
                 distance: 0.5,
                 overallPlace: -6
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -1079,7 +1441,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Overall Place' );
         } );
 
-        it( 'rejects overall place > total', async function () {
+        it( 'rejects overall place > total', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -1090,11 +1452,13 @@ describe( 'apiRouter', function () {
                 overallPlace: 500,
                 overallTotal: 100
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -1103,7 +1467,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Overall Place' );
         } );
 
-        it( 'rejects zero gender place', async function () {
+        it( 'rejects zero gender place', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -1113,11 +1477,13 @@ describe( 'apiRouter', function () {
                 distance: 0.5,
                 genderPlace: 0
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -1126,7 +1492,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Gender Place' );
         } );
 
-        it( 'rejects gender place > total', async function () {
+        it( 'rejects gender place > total', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -1137,11 +1503,13 @@ describe( 'apiRouter', function () {
                 genderPlace: 50,
                 genderTotal: 10
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -1150,7 +1518,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Gender Place' );
         } );
 
-        it( 'rejects negative division place', async function () {
+        it( 'rejects negative division place', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -1160,11 +1528,13 @@ describe( 'apiRouter', function () {
                 distance: 0.5,
                 divisionPlace: -6
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -1173,7 +1543,7 @@ describe( 'apiRouter', function () {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Division Place' );
         } );
 
-        it( 'rejects division place > total', async function () {
+        it( 'rejects division place > total', async function( ) {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -1184,11 +1554,13 @@ describe( 'apiRouter', function () {
                 divisionPlace: 50,
                 divisionTotal: 10
             };
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'POST',
                 url: apiUrl + '/races',
                 body: badData,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -1200,6 +1572,7 @@ describe( 'apiRouter', function () {
 
     async function create3UsersAnd3Races() {
         await create3Users();
+        await logInAsUserNum( 1 );
         const data1 = {
             username: 'username1',
             name: 'Race Name 1',
@@ -1228,8 +1601,10 @@ describe( 'apiRouter', function () {
             method: 'POST',
             url: apiUrl + '/races',
             body: data1,
-            json: true
+            json: true,
+            jar: true
         } );
+        await logInAsUserNum( 2 );
         const data2 = {
             username: 'username2',
             name: 'Race Name 2',
@@ -1243,8 +1618,10 @@ describe( 'apiRouter', function () {
             method: 'POST',
             url: apiUrl + '/races',
             body: data2,
-            json: true
+            json: true,
+            jar: true
         } );
+        await logInAsUserNum( 1 );
         const data3 = {
             username: 'username1',
             name: 'Race Name 3',
@@ -1258,8 +1635,10 @@ describe( 'apiRouter', function () {
             method: 'POST',
             url: apiUrl + '/races',
             body: data3,
-            json: true
+            json: true,
+            jar: true
         } );
+        await logOut();
 
         return [ raceId1, raceId2, raceId3 ];
     }
@@ -1267,26 +1646,30 @@ describe( 'apiRouter', function () {
     describe( 'GET /users/:username/races/', function( ) {
         beforeEach( create3UsersAnd3Races );
 
-        it( "gets a user's races", async function () { //eslint-disable-line quotes
+        it( "gets a user's races", async function( ) { //eslint-disable-line quotes
             const races1 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username1' + '/races',
-                json: true
+                json: true,
+                jar: true
             } );
             const races2 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username2' + '/races',
-                json: true
+                json: true,
+                jar: true
             } );
             const races3 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username3' + '/races',
-                json: true
+                json: true,
+                jar: true
             } );
             const races4 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'nosuchuser' + '/races',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( races1.length ).to.equal( 2 );
@@ -1300,33 +1683,65 @@ describe( 'apiRouter', function () {
 
     describe( 'GET /races/:id', function( ) {
         let raceId1, raceId3;
-        beforeEach( async function () {
+        beforeEach( async function( ) {
             const ids = await create3UsersAnd3Races();
             raceId1 = ids[ 0 ];
             raceId3 = ids[ 2 ];
         } );
 
-        it( 'gets a race by ID', async function () {
+        it( 'returns 403 if not logged in', async function( ) {
+            const response = await request( {
+                method: 'GET',
+                url: apiUrl + '/races/' + raceId1,
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'gets a race by ID', async function( ) {
+            await logInAsUserNum( 1 );
             const race1 = await request( {
                 method: 'GET',
                 url: apiUrl + '/races/' + raceId1,
-                json: true
+                json: true,
+                jar: true
             } );
             const race3 = await request( {
                 method: 'GET',
                 url: apiUrl + '/races/' + raceId3,
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( race1.genderPlace ).to.equal( 50 );
             expect( race3.city ).to.equal( 'Mytown' );
         } );
 
-        it( 'returns 404 for non-existent race', async function () {
+        it( 'returns 403 if not logged in as a different user', async function( ) {
+            await logInAsUserNum( 2 );
+            const response = await request( {
+                method: 'GET',
+                url: apiUrl + '/races/' + raceId1,
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'returns 404 for non-existent race', async function( ) {
+            await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'GET',
                 url: apiUrl + '/races/' + -10,
                 json: true,
+                jar: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
@@ -1337,13 +1752,56 @@ describe( 'apiRouter', function () {
 
     describe( 'PUT /races/:id', function( ) {
         let raceId1, raceId2;
-        beforeEach( async function () {
+        beforeEach( async function( ) {
             const ids = await create3UsersAnd3Races();
             raceId1 = ids[ 0 ];
             raceId2 = ids[ 1 ];
         } );
 
-        it( 'updates most fields', async function () {
+        it( 'returns 403 if not logged in', async function( ) {
+            const newData = {
+                name: 'New Race Name',
+                city: 'Oaktown',
+                country: 'US',
+                unit: 'km'
+            };
+
+            const response = await request( {
+                method: 'PUT',
+                url: apiUrl + '/races/' + raceId1,
+                body: newData,
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'returns 403 if logged in as a different user', async function( ) {
+            const newData = {
+                name: 'New Race Name',
+                city: 'Oaktown',
+                country: 'US',
+                unit: 'km'
+            };
+
+            await logInAsUserNum( 2 );
+            const response = await request( {
+                method: 'PUT',
+                url: apiUrl + '/races/' + raceId1,
+                body: newData,
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'updates most fields', async function( ) {
             const newData = {
                 name: 'New Race Name',
                 url: 'https://races.example.com/newrace.html',
@@ -1368,27 +1826,35 @@ describe( 'apiRouter', function () {
                 notes: 'PR'
             };
 
+            await logInAsUserNum( 1 );
             await request( {
                 method: 'PUT',
                 url: apiUrl + '/races/' + raceId1,
                 body: newData,
-                json: true
+                json: true,
+                jar: true
             } );
+            await logInAsUserNum( 2 );
             await request( {
                 method: 'PUT',
                 url: apiUrl + '/races/' + raceId2,
                 body: newData,
-                json: true
+                json: true,
+                jar: true
             } );
+            await logInAsUserNum( 1 );
             const race1 = await request( {
                 method: 'GET',
                 url: apiUrl + '/races/' + raceId1,
-                json: true
+                json: true,
+                jar: true
             } );
+            await logInAsUserNum( 2 );
             const race2 = await request( {
                 method: 'GET',
                 url: apiUrl + '/races/' + raceId2,
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( race1.name ).to.equal( newData.name );
@@ -1414,26 +1880,73 @@ describe( 'apiRouter', function () {
             expect( race1.notes ).to.equal( newData.notes );
         } );
 
-        it( 'does not change username', async function () {
+        it( 'can update just some fields', async function( ) {
             const newData = {
-                username: 'newusername1'
+                name: 'New Race Name',
+                resultsUrl: 'https://racesresults.example.com?race=newrace',
+                city: 'Oaktown',
+                country: 'US',
+                unit: 'km',
+                result: 'disqualified',
+                gunTime: 2868,
+                overallTotal: 500,
+                genderTotal: 50,
+                divisionTotal: 5,
+                notes: 'PR'
             };
+
+            await logInAsUserNum( 1 );
             await request( {
                 method: 'PUT',
                 url: apiUrl + '/races/' + raceId1,
                 body: newData,
-                json: true
+                json: true,
+                jar: true
+            } );
+            await logInAsUserNum( 1 );
+            const race1 = await request( {
+                method: 'GET',
+                url: apiUrl + '/races/' + raceId1,
+                json: true,
+                jar: true
+            } );
+
+            expect( race1.name ).to.equal( newData.name );
+            expect( race1.resultsUrl ).to.equal( newData.resultsUrl );
+            expect( race1.city ).to.equal( newData.city );
+            expect( race1.country ).to.equal( newData.country );
+            expect( race1.unit ).to.equal( newData.unit );
+            expect( race1.result ).to.equal( newData.result );
+            expect( race1.gunTime ).to.equal( newData.gunTime );
+            expect( race1.overallTotal ).to.equal( newData.overallTotal );
+            expect( race1.genderTotal ).to.equal( newData.genderTotal );
+            expect( race1.divisionTotal ).to.equal( newData.divisionTotal );
+            expect( race1.notes ).to.equal( newData.notes );
+        } );
+
+        it( 'does not change username', async function( ) {
+            const newData = {
+                username: 'newusername1'
+            };
+            await logInAsUserNum( 1 );
+            await request( {
+                method: 'PUT',
+                url: apiUrl + '/races/' + raceId1,
+                body: newData,
+                json: true,
+                jar: true
             } );
             const race1 = await request( {
                 method: 'GET',
                 url: apiUrl + '/races/' + raceId1,
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( race1.username ).to.equal( 'username1' );
         } );
 
-        it( 'does not affect other races', async function () {
+        it( 'does not affect other races', async function( ) {
             const newData = {
                 name: 'New Race Name',
                 resultsUrl: 'https://racesresults.example.com?race=newrace',
@@ -1448,11 +1961,14 @@ describe( 'apiRouter', function () {
                 notes: 'Just updating some fields'
             };
 
+            await logInAsUserNum( 1 );
             await dbService.updateRace( raceId1, newData );
+            await logInAsUserNum( 2 );
             const race2 = await request( {
                 method: 'GET',
                 url: apiUrl + '/races/' + raceId2,
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( race2.name ).to.equal( 'Race Name 2' );
@@ -1461,35 +1977,65 @@ describe( 'apiRouter', function () {
 
     describe( 'DELETE /races/:id', function( ) {
         let raceId1;
-        beforeEach( async function () {
+        beforeEach( async function( ) {
             const ids = await create3UsersAnd3Races();
             raceId1 = ids[ 0 ];
         } );
 
-        it( 'removes a race from the DB', async function () {
+        it( 'returns 403 if not logged in', async function( ) {
+            const response = await request( {
+                method: 'DELETE',
+                url: apiUrl + '/races/' + raceId1,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'returns 403 if logged in as a different user', async function( ) {
+            await logInAsUserNum( 2 );
+            const response = await request( {
+                method: 'DELETE',
+                url: apiUrl + '/races/' + raceId1,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( 'removes a race from the DB', async function( ) {
+            await logInAsUserNum( 1 );
             await request( {
                 method: 'DELETE',
-                url: apiUrl + '/races/' + raceId1
+                url: apiUrl + '/races/' + raceId1,
+                jar: true
             } );
             const races1 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username1' + '/races',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( races1.length ).to.equal( 1 );
             expect( races1[ 0 ].name ).to.equal( 'Race Name 3' );
         } );
 
-        it( 'succeeds if the race already does not exist', async function () {
+        it( 'succeeds if the race already does not exist', async function( ) {
             await request( {
                 method: 'DELETE',
-                url: apiUrl + '/races/' + -10
+                url: apiUrl + '/races/' + -10,
+                jar: true
             } );
             const races1 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username1' + '/races',
-                json: true
+                json: true,
+                jar: true
             } );
 
             expect( races1.length ).to.equal( 2 );

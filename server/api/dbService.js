@@ -50,7 +50,30 @@ const passwordsNonkeyFields = [
     'passHash'
 ];
 
-async function getUsers( ) {
+async function isUserVisible( username, requestingUser ) {
+    if ( username === requestingUser ) {
+        return true;
+    }
+    const visibilities = await db.select( 'visibility' )
+        .from( 'users' )
+        .where( 'username', username );
+    const visibility = visibilities[ 0 ];
+    if ( requestingUser ) {
+        if ( visibility === 'all' || visibility === 'users' ) {
+            return true;
+        } else if ( visibility === 'friends' ) {
+            const friends = await db.select( 'friend' )
+                .from( 'friends' )
+                .where( { username: username, friend: requestingUser } );
+            return (friends.length > 0 );
+        }
+        return false;
+    } else {
+        return (visibility === 'all');
+    }
+}
+
+async function getUsers( requestingUser ) {
     return await db.select( makeSelectList( usersPublicFields ) )
         .from( 'users' )
         .orderBy( 'fullName' );
@@ -97,7 +120,6 @@ async function createUser( data ) {
 }
 
 async function updateUser( username, data ) {
-    //!!! if ( username !== loggedInUser ) return;
     let newData = convertDataForDb( data, usersAllNonkeyFields );
     if ( Object.keys( newData ).length === 0 ) {
         return Promise.resolve( );
@@ -122,7 +144,6 @@ async function updatePassword( username, password ) {
 }
 
 async function changePassword( username, data) {
-    //!!! if ( username !== loggedInUser ) return;
     if ( await authService.validateUser( username, data.currentPassword ) ) {
         await updatePassword( username, data.newPassword );
     } else {
@@ -131,7 +152,6 @@ async function changePassword( username, data) {
 }
 
 async function deleteUser( username ) {
-    //!!! if ( username !== loggedInUser ) return;
     await db( 'users' )
         .del( )
         .where( 'username', username );
@@ -202,7 +222,6 @@ function convertUsersDbError( err ) {
 
 
 async function getFriends( username ) {
-    //!!! if ( username !== loggedInUser ) return;
     return await db.select( makeSelectList( usersPublicFields ) )
         .from( 'users' )
         .whereIn( 'username', function( ) {
@@ -213,7 +232,6 @@ async function getFriends( username ) {
 }
 
 async function addFriend( username, friend ) {
-    //!!! if ( data.username !== loggedInUser ) return;
     const inserts = await db.insert( {
         username,
         friend
@@ -227,7 +245,6 @@ async function addFriend( username, friend ) {
 }
 
 async function deleteFriend( username, friend ) {
-    //!!! if ( username !== loggedInUser ) return;
     await db( 'friends' )
         .del( )
         .where( { username, friend } );
@@ -338,7 +355,6 @@ async function getUserRaces( username ) {
 }
 
 async function createRace( data ) {
-    //!!! if ( data.username !== loggedInUser ) return;
     const ids = await db.insert( convertDataForDb( data, racesNonkeyFields ) )
         .returning( 'id' )
         .into( 'races' )
@@ -349,7 +365,6 @@ async function createRace( data ) {
 }
 
 async function updateRace( id, data ) {
-    //!!! if ( username !== loggedInUser ) return;
     let newData = convertDataForDb( data, racesUpdateFields );
     if ( Object.keys( newData ).length === 0 ) {
         return Promise.resolve();
@@ -363,13 +378,6 @@ async function updateRace( id, data ) {
 }
 
 async function deleteRace( id ) {
-    const usernames = await db.select( 'username' )
-        .from( 'races' )
-        .where( 'id', id );
-    if ( usernames.length === 0 ) {
-        return;
-    }
-    //!!! if ( usernames[ 0 ].username !== loggedInUser ) return;
     await db( 'races' )
         .del()
         .where( 'id', id );
@@ -499,6 +507,7 @@ function convertDataForDb( data, fields ) {
 
 
 module.exports = {
+    isUserVisible,
     getUsers,
     getUser,
     getPassHash,    //Not for Web API

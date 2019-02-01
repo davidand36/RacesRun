@@ -14,14 +14,14 @@ const dbService = require( './dbService' );
 const router = new Router( );
 
 router.get( '/users/', getUsers );
-router.get( '/users/:username', getUser );
+router.get( '/users/:username', authUser, getUser );
 router.post( '/users/', koaBody(), createUser );
-router.put( '/users/:username', koaBody(), updateUser );
-router.put( '/users/:username/password', koaBody(), changePassword );
-router.delete( '/users/:username', deleteUser );
-router.get( '/users/:username/friends', getFriends );
-router.post( '/users/:username/friends/:friend', addFriend );
-router.delete( '/users/:username/friends/:friend', deleteFriend );
+router.put( '/users/:username', koaBody(), authUser, updateUser );
+router.put( '/users/:username/password', koaBody(), authUser, changePassword );
+router.delete( '/users/:username', authUser, deleteUser );
+router.get( '/users/:username/friends', authUser, getFriends );
+router.post( '/users/:username/friends/:friend', authUser, addFriend );
+router.delete( '/users/:username/friends/:friend', authUser, deleteFriend );
 
 router.get( '/users/:username/races/', getUserRaces );
 router.get( '/races/:id', getRace );
@@ -30,7 +30,7 @@ router.put( '/races/:id', koaBody(), updateRace );
 router.delete( '/races/:id', deleteRace );
 
 async function getUsers( ctx ) {
-    await dbService.getUsers( )
+    await dbService.getUsers( ctx.state.user )
     .then( users => {
         ctx.response.body = users;
     } )
@@ -38,6 +38,14 @@ async function getUsers( ctx ) {
         console.error( err );
         ctx.response.status = 500;
     } );
+}
+
+async function authUser( ctx, next ) {
+    if ( ctx.params.username === ctx.state.user ) {
+        await next( );
+    } else {
+        ctx.response.status = 403;
+    }
 }
 
 async function getUser( ctx ) {
@@ -157,6 +165,7 @@ async function deleteFriend( ctx ) {
 }
 
 async function getUserRaces( ctx ) {
+    //!!! Check visibility
     await dbService.getUserRaces( ctx.params.username )
     .then( races => {
         ctx.response.body = races;
@@ -171,7 +180,11 @@ async function getRace( ctx ) {
     await dbService.getRace( ctx.params.id )
     .then( race => {
         if ( race ) {
-            ctx.response.body = race;
+            if ( race.username === ctx.state.user ) {
+                ctx.response.body = race;
+            } else {
+                ctx.response.status = 403;
+            }
         } else {
             ctx.response.status = 404;
         }
@@ -183,6 +196,10 @@ async function getRace( ctx ) {
 }
 
 async function createRace( ctx ) {
+    if ( ctx.request.body.username !== ctx.state.user ) {
+        ctx.response.status = 403;
+        return;
+    }
     await dbService.createRace( ctx.request.body )
     .then( id => {
         ctx.response.body = id;
@@ -200,6 +217,11 @@ async function createRace( ctx ) {
 }
 
 async function updateRace( ctx ) {
+    const race = await dbService.getRace( ctx.params.id );
+    if ( race && (race.username !== ctx.state.user) ) {
+        ctx.response.status = 403;
+        return;
+    }
     await dbService.updateRace( ctx.params.id, ctx.request.body )
     .then( () => {
         ctx.response.status = 200;
@@ -216,6 +238,11 @@ async function updateRace( ctx ) {
 }
 
 async function deleteRace( ctx ) {
+    const race = await dbService.getRace( ctx.params.id );
+    if ( race && (race.username !== ctx.state.user) ) {
+        ctx.response.status = 403;
+        return;
+    }
     await dbService.deleteRace( ctx.params.id )
     .then( () => {
         ctx.response.status = 200;

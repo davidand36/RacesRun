@@ -35,6 +35,14 @@ describe( 'authRouter', function() {
         } );
     } );
 
+    afterEach( async function() {
+        await request( {
+            method: 'POST',
+            url: authUrl + '/logout',
+            jar: true
+        } );
+    } );
+
     after( dbService.disconnect );
 
     describe( 'POST /login', function( ) {
@@ -123,7 +131,6 @@ describe( 'authRouter', function() {
             const response = await request( {
                 method: 'POST',
                 url: authUrl + '/logout',
-                json: true,
                 resolveWithFullResponse: true,
                 simple: false
             } );
