@@ -55,6 +55,189 @@ describe( 'apiRouter', function( ) {
     }
 
 
+    async function createUsers( n ) {
+        let userData = {
+            username: 'username1',
+            fullName: 'Full Name 1',
+            gender: 'male',
+            dateOfBirth: new Date( 1969, 6, 20 ),
+            email: 'username1@example.com',
+            visibility: 'public',
+            password: 'secret1'
+        };
+        await request( {
+            method: 'POST',
+            url: apiUrl + '/users',
+            body: userData,
+            json: true
+        } );
+
+        for ( let i = 2; i <= n; ++i ) {
+            let userData = {
+                username: 'username' + i,
+                fullName: 'Full Name ' + i,
+                password: 'secret' + i
+            }
+            switch ( i % 4 ) {
+                case 0: {
+                    userData.visibility = 'public';
+                    break;
+                }
+                case 1: {
+                    userData.visibility = 'users';
+                    break;
+                }
+                case 2: {
+                    userData.visibility = 'friends';
+                    break;
+                }
+                case 3: {
+                    userData.visibility = 'private';
+                    break;
+                }
+            }
+            await request( {
+                method: 'POST',
+                url: apiUrl + '/users',
+                body: userData,
+                json: true
+            } );
+        }
+    }
+
+    async function create3Users() {
+        await createUsers( 3 );
+    }
+
+    async function createUsersAndFriends( n ) {
+        await createUsers( n );
+        for ( let i = 1; i <= n; ++i ) {
+            if ( i % 8 === 2 ) {
+                await logInAsUserNum( i );
+                for ( let j = 1; j <= n; ++j ) {
+                    if ( j % 2 === 1 ) {
+                        await request( {
+                            method: 'POST',
+                            url: apiUrl + '/users/' + 'username' + i + '/friends/' + 'username' + j,
+                            jar: true
+                        } );
+                    }
+                }
+            }
+            if ( i % 8 === 6 ) {
+                await logInAsUserNum( i );
+                for ( let j = 1; j <= n; ++j ) {
+                    if ( ( j % 2 === 0 ) && ( i !== j ) ) {
+                        await request( {
+                            method: 'POST',
+                            url: apiUrl + '/users/' + 'username' + i + '/friends/' + 'username' + j,
+                            jar: true
+                        } );
+                    }
+                }
+            }
+        }
+        await logOut( );
+    }
+
+    async function create9UsersAndFriends() {
+        /*
+            Creates usernameN with visibility:
+            1 public
+            2 friends (1,3,5,7,9)
+            3 private
+            4 public
+            5 users
+            6 friends (2,4,8)
+            7 private
+            8 public
+            9 users
+        */
+        await createUsersAndFriends( 9 );
+    }
+
+    async function createUsersFriendsAndRaces( n ) {
+        await createUsersAndFriends( n );
+        let raceIds = [];
+
+        await logInAsUserNum( 1 );
+        const raceData1 = {
+            username: 'username1',
+            name: 'Race Name 0',
+            url: 'https://races.example.com/race0.html',
+            resultsUrl: 'https://racesresults.example.com?race=race0',
+            date: new Date( 2015, 5, 30 ),
+            city: 'Anytown',
+            state: 'WA',
+            country: 'US',
+            distance: 1,
+            unit: 'marathon',
+            bib: '1729',
+            result: 'finished',
+            chipTime: 13424,
+            gunTime: 13484,
+            overallPlace: 500,
+            overallTotal: 1000,
+            genderPlace: 50,
+            genderTotal: 100,
+            divisionPlace: 5,
+            divisionTotal: 10,
+            divisionName: 'M 60-64',
+            notes: 'This was my first marathon. Nice and flat.'
+        };
+        const raceId1 = await request( {
+            method: 'POST',
+            url: apiUrl + '/races',
+            body: raceData1,
+            json: true,
+            jar: true
+        } );
+        raceIds.push( raceId1 );
+
+        let r = 1;
+        for ( let u = 1; u <= n; ++u ) {
+            await logInAsUserNum( u );
+            for ( let i = 0; i < (u % 4); ++i, ++r ) {
+                const raceData = {
+                    username: 'username' + u,
+                    name: 'Race Name ' + r,
+                    date: new Date( 2000 + r, (r % 12) + 1, 1 ),
+                    city: 'City ' + r,
+                    country: 'Country ' + r,
+                    distance: 10
+                };
+                const raceId = await request( {
+                    method: 'POST',
+                    url: apiUrl + '/races',
+                    body: raceData,
+                    json: true,
+                    jar: true
+                } );
+                raceIds.push( raceId );
+            }
+        }
+        await logOut( );
+
+        return raceIds;
+    }
+
+    async function create9UsersFriendsAndRaces( ) {
+        /*
+            Creates usernameN with visibility and races 'Race Name R':
+            1: public         0,1
+            2: friends (odd)  2,3
+            3: private        4,5,6
+            4: public
+            5: users          7
+            6: friends (even) 8,9
+            7: private        10,11,12
+            8: public
+            9: users          13
+        */
+        return await createUsersFriendsAndRaces( 9 );
+    }
+
+
     describe( 'POST /users', function( ) {
         it( 'returns 201 as status and the username as body on success', async function( ) {
             const response = await request( {
@@ -66,7 +249,7 @@ describe( 'apiRouter', function( ) {
                     gender: 'male',
                     dateOfBirth: new Date( 1969, 6, 20 ),
                     email: 'username1@example.com',
-                    visibility: 'all',
+                    visibility: 'public',
                     password: 'secret1'
                 },
                 json: true,
@@ -252,48 +435,10 @@ describe( 'apiRouter', function( ) {
         } );
     } );
 
-    async function create3Users( ) {
-        await request( {
-            method: 'POST',
-            url: apiUrl + '/users',
-            body: {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                gender: 'male',
-                dateOfBirth: new Date( 1969, 6, 20 ),
-                email: 'username1@example.com',
-                visibility: 'all',
-                password: 'secret1'
-            },
-            json: true
-        } );
-        await request( {
-            method: 'POST',
-            url: apiUrl + '/users',
-            body: {
-                username: 'username2',
-                fullName: 'Full Name 2',
-                password: 'secret2'
-            },
-            json: true
-        } );
-        await request( {
-            method: 'POST',
-            url: apiUrl + '/users',
-            body: {
-                username: 'username3',
-                fullName: 'Full Name 3',
-                password: 'secret3',
-                visibility: 'users'
-            },
-            json: true
-        } );
-    }
-
     describe( 'GET /users', function( ) {
-        beforeEach( create3Users );
+        beforeEach( create9UsersAndFriends );
 
-        it( 'gets all users in the DB', async function( ) {
+        it( 'gets only public users if not logged in', async function( ) {
             const users = await request( {
                 method: 'GET',
                 url: apiUrl + '/users',
@@ -302,7 +447,45 @@ describe( 'apiRouter', function( ) {
             } );
 
             expect( users.length ).to.equal( 3 );
-            expect( users[ 1 ].fullName ).to.equal( 'Full Name 2' );
+            expect( users[ 0 ].fullName ).to.equal( 'Full Name 1' ); //public
+            expect( users[ 1 ].fullName ).to.equal( 'Full Name 4' ); //public
+            expect( users[ 2 ].fullName ).to.equal( 'Full Name 8' ); //public
+        } );
+
+        it( 'gets the correctly visibile users when logged in (5)', async function( ) {
+            await logInAsUserNum( 5 );
+            const users = await request( {
+                method: 'GET',
+                url: apiUrl + '/users',
+                json: true,
+                jar: true
+            } );
+
+            expect( users.length ).to.equal( 6 );
+            expect( users[ 0 ].fullName ).to.equal( 'Full Name 1' ); //public
+            expect( users[ 1 ].fullName ).to.equal( 'Full Name 2' ); //friends
+            expect( users[ 2 ].fullName ).to.equal( 'Full Name 4' ); //public
+            expect( users[ 3 ].fullName ).to.equal( 'Full Name 5' ); //self
+            expect( users[ 4 ].fullName ).to.equal( 'Full Name 8' ); //public
+            expect( users[ 5 ].fullName ).to.equal( 'Full Name 9' ); //users
+        } );
+
+        it( 'gets the correctly visibile users when logged in (6)', async function() {
+            await logInAsUserNum( 6 );
+            const users = await request( {
+                method: 'GET',
+                url: apiUrl + '/users',
+                json: true,
+                jar: true
+            } );
+
+            expect( users.length ).to.equal( 6 );
+            expect( users[ 0 ].fullName ).to.equal( 'Full Name 1' ); //public
+            expect( users[ 1 ].fullName ).to.equal( 'Full Name 4' ); //public
+            expect( users[ 2 ].fullName ).to.equal( 'Full Name 5' ); //users
+            expect( users[ 3 ].fullName ).to.equal( 'Full Name 6' ); //self
+            expect( users[ 4 ].fullName ).to.equal( 'Full Name 8' ); //public
+            expect( users[ 5 ].fullName ).to.equal( 'Full Name 9' ); //users
         } );
 
         it( 'does not get email addresses', async function( ) {
@@ -645,7 +828,7 @@ describe( 'apiRouter', function( ) {
     } );
 
     describe( 'DELETE  /users/:username', function( ) {
-        beforeEach( create3Users );
+        beforeEach( create9UsersAndFriends );
 
         it( 'returns 403 if not logged in', async function( ) {
             const response = await request( {
@@ -659,7 +842,7 @@ describe( 'apiRouter', function( ) {
             expect( response.statusCode ).to.equal( 403 );
         } );
 
-        it( 'returns 403 if not logged in as a different user', async function( ) {
+        it( 'returns 403 if logged in as a different user', async function( ) {
             await logInAsUserNum( 2 );
             const response = await request( {
                 method: 'DELETE',
@@ -687,7 +870,7 @@ describe( 'apiRouter', function( ) {
                 jar: true
             } );
 
-            expect( users.length ).to.equal( 2 ); //!!!
+            expect( users.length ).to.equal( 6 );
             expect( users[ 0 ].username ).to.equal( 'username2' );
         } );
     } );
@@ -785,30 +968,8 @@ describe( 'apiRouter', function( ) {
         } );
     } );
 
-    async function create3UsersAnd3Friends() {
-        await create3Users();
-        await logInAsUserNum( 1 );
-        await request( {
-            method: 'POST',
-            url: apiUrl + '/users/' + 'username1' + '/friends/' + 'username3',
-            jar: true
-        } );
-        await logInAsUserNum( 2 );
-        await request( {
-            method: 'POST',
-            url: apiUrl + '/users/' + 'username2' + '/friends/' + 'username1',
-            jar: true
-        } );
-        await request( {
-            method: 'POST',
-            url: apiUrl + '/users/' + 'username2' + '/friends/' + 'username3',
-            jar: true
-        } );
-        await logOut();
-    }
-
     describe( 'GET /users/:username/friends', function( ) {
-        beforeEach( create3UsersAnd3Friends );
+        beforeEach( create9UsersAndFriends );
 
         it( 'returns 403 if not logged in', async function( ) {
             const response = await request( {
@@ -852,23 +1013,23 @@ describe( 'apiRouter', function( ) {
                 json: true,
                 jar: true
             } );
-            await logInAsUserNum( 3 );
-            const friends3 = await request( {
+            await logInAsUserNum( 6 );
+            const friends6 = await request( {
                 method: 'GET',
-                url: apiUrl + '/users/' + 'username3' + '/friends/',
+                url: apiUrl + '/users/' + 'username6' + '/friends/',
                 json: true,
                 jar: true
             } );
 
-            expect( friends1.length ).to.equal( 1 );
-            expect( friends2.length ).to.equal( 2 );
-            expect( friends3.length ).to.equal( 0 );
-            expect( friends1[ 0 ].fullName ).to.equal( 'Full Name 3' );
+            expect( friends1.length ).to.equal( 0 );
+            expect( friends2.length ).to.equal( 5 );
+            expect( friends6.length ).to.equal( 3 );
+            expect( friends6[ 0 ].fullName ).to.equal( 'Full Name 2' );
         } );
     } );
 
     describe( 'DELETE /users/:username/friends/:friend', function( ) {
-        beforeEach( create3UsersAnd3Friends );
+        beforeEach( create9UsersAndFriends );
 
         it( 'returns 403 if not logged in', async function( ) {
             const response = await request( {
@@ -909,24 +1070,24 @@ describe( 'apiRouter', function( ) {
                 jar: true
             } );
 
-            expect( friends2.length ).to.equal( 1 );
+            expect( friends2.length ).to.equal( 4 );
         } );
 
         it( 'succeeds if the friend record does not exist', async function( ) {
-            await logInAsUserNum( 1 );
+            await logInAsUserNum( 2 );
             await request( {
                 method: 'DELETE',
-                url: apiUrl + '/users/' + 'username1' + '/friends/' + 'username2',
+                url: apiUrl + '/users/' + 'username2' + '/friends/' + 'username4',
                 jar: true
             } );
-            const friends1 = await request( {
+            const friends2 = await request( {
                 method: 'GET',
-                url: apiUrl + '/users/' + 'username1' + '/friends/',
+                url: apiUrl + '/users/' + 'username2' + '/friends/',
                 json: true,
                 jar: true
             } );
 
-            expect( friends1.length ).to.equal( 1 );
+            expect( friends2.length ).to.equal( 5 );
         } );
     } );
 
@@ -982,8 +1143,8 @@ describe( 'apiRouter', function( ) {
             const fullData = {
                 username: 'username1',
                 name: 'Race Name 1',
-                url: 'https://races.example.com/race1.html',
-                resultsUrl: 'https://racesresults.example.com?race=race1',
+                url: 'https://races.example.com/race0.html',
+                resultsUrl: 'https://racesresults.example.com?race=race0',
                 date: new Date( 2015, 5, 30 ),
                 city: 'Anytown',
                 state: 'WA',
@@ -1570,129 +1731,82 @@ describe( 'apiRouter', function( ) {
         } );
     } );
 
-    async function create3UsersAnd3Races() {
-        await create3Users();
-        await logInAsUserNum( 1 );
-        const data1 = {
-            username: 'username1',
-            name: 'Race Name 1',
-            url: 'https://races.example.com/race1.html',
-            resultsUrl: 'https://racesresults.example.com?race=race1',
-            date: new Date( 2015, 5, 30 ),
-            city: 'Anytown',
-            state: 'WA',
-            country: 'US',
-            distance: 1,
-            unit: 'marathon',
-            bib: '1729',
-            result: 'finished',
-            chipTime: 13424,
-            gunTime: 13484,
-            overallPlace: 500,
-            overallTotal: 1000,
-            genderPlace: 50,
-            genderTotal: 100,
-            divisionPlace: 5,
-            divisionTotal: 10,
-            divisionName: 'M 60-64',
-            notes: 'This was my first marathon. Nice and flat.'
-        };
-        const raceId1 = await request( {
-            method: 'POST',
-            url: apiUrl + '/races',
-            body: data1,
-            json: true,
-            jar: true
-        } );
-        await logInAsUserNum( 2 );
-        const data2 = {
-            username: 'username2',
-            name: 'Race Name 2',
-            date: new Date( 2016, 3, 5 ),
-            city: 'Sometown',
-            country: 'US',
-            distance: 0.5,
-            unit: 'marathon'
-        };
-        const raceId2 = await request( {
-            method: 'POST',
-            url: apiUrl + '/races',
-            body: data2,
-            json: true,
-            jar: true
-        } );
-        await logInAsUserNum( 1 );
-        const data3 = {
-            username: 'username1',
-            name: 'Race Name 3',
-            date: new Date( 2018, 7, 14 ),
-            city: 'Mytown',
-            state: 'OR',
-            country: 'US',
-            distance: 5
-        };
-        const raceId3 = await request( {
-            method: 'POST',
-            url: apiUrl + '/races',
-            body: data3,
-            json: true,
-            jar: true
-        } );
-        await logOut();
-
-        return [ raceId1, raceId2, raceId3 ];
-    }
-
     describe( 'GET /users/:username/races/', function( ) {
-        beforeEach( create3UsersAnd3Races );
+        beforeEach( create9UsersFriendsAndRaces );
 
-        it( "gets a user's races", async function( ) { //eslint-disable-line quotes
+        it( "gets a public user's races if not logged in", async function() { //eslint-disable-line quotes
             const races1 = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username1' + '/races',
                 json: true,
                 jar: true
             } );
-            const races2 = await request( {
+
+            expect( races1.length ).to.equal( 2 );
+            expect( races1[ 1 ].date ).to.equal( new Date( 2015, 5, 30 ).toJSON() );
+            expect( races1[ 0 ].name ).to.equal( 'Race Name 1' );
+        } );
+
+        it( 'returns 403 if user is not public and not logged in', async function( ) {
+            const response = await request( {
                 method: 'GET',
                 url: apiUrl + '/users/' + 'username2' + '/races',
                 json: true,
-                jar: true
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
             } );
-            const races3 = await request( {
+
+            expect( response.statusCode ).to.equal( 403 );
+        } );
+
+        it( "gets a visible user's races", async function() { //eslint-disable-line quotes
+            await logInAsUserNum( 2 );
+            const races6 = await request( {
                 method: 'GET',
-                url: apiUrl + '/users/' + 'username3' + '/races',
+                url: apiUrl + '/users/' + 'username6' + '/races',
                 json: true,
                 jar: true
             } );
-            const races4 = await request( {
+            await logInAsUserNum( 7 );
+            const races7 = await request( {
                 method: 'GET',
-                url: apiUrl + '/users/' + 'nosuchuser' + '/races',
+                url: apiUrl + '/users/' + 'username7' + '/races',
                 json: true,
                 jar: true
             } );
 
-            expect( races1.length ).to.equal( 2 );
-            expect( races2.length ).to.equal( 1 );
-            expect( races3.length ).to.equal( 0 );
-            expect( races4.length ).to.equal( 0 );
-            expect( races1[ 1 ].state ).to.equal( 'OR' );
-            expect( races2[ 0 ].date ).to.equal( new Date( 2016, 3, 5 ).toJSON() );
+            expect( races6.length ).to.equal( 2 );
+            expect( races6[ 1 ].name ).to.equal( 'Race Name 9' );
+            expect( races7.length ).to.equal( 3 );
+            expect( races7[ 2 ].name ).to.equal( 'Race Name 12' );
+        } );
+
+        it( 'returns 403 if user is not visible to logged-in user', async function() {
+            await logInAsUserNum( 2 );
+            const response = await request( {
+                method: 'GET',
+                url: apiUrl + '/users/' + 'username7' + '/races',
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 403 );
         } );
     } );
 
     describe( 'GET /races/:id', function( ) {
-        let raceId1, raceId3;
+        let raceIds;
         beforeEach( async function( ) {
-            const ids = await create3UsersAnd3Races();
-            raceId1 = ids[ 0 ];
-            raceId3 = ids[ 2 ];
+            raceIds = await create9UsersFriendsAndRaces( );
         } );
 
         it( 'returns 403 if not logged in', async function( ) {
             const response = await request( {
                 method: 'GET',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[0],
                 json: true,
                 jar: true,
                 resolveWithFullResponse: true,
@@ -1704,28 +1818,28 @@ describe( 'apiRouter', function( ) {
 
         it( 'gets a race by ID', async function( ) {
             await logInAsUserNum( 1 );
-            const race1 = await request( {
+            const race0 = await request( {
                 method: 'GET',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[0],
                 json: true,
                 jar: true
             } );
-            const race3 = await request( {
+            const race1 = await request( {
                 method: 'GET',
-                url: apiUrl + '/races/' + raceId3,
+                url: apiUrl + '/races/' + raceIds[1],
                 json: true,
                 jar: true
             } );
 
-            expect( race1.genderPlace ).to.equal( 50 );
-            expect( race3.city ).to.equal( 'Mytown' );
+            expect( race0.genderPlace ).to.equal( 50 );
+            expect( race1.country ).to.equal( 'Country 1' );
         } );
 
         it( 'returns 403 if not logged in as a different user', async function( ) {
             await logInAsUserNum( 2 );
             const response = await request( {
                 method: 'GET',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[1],
                 json: true,
                 jar: true,
                 resolveWithFullResponse: true,
@@ -1739,7 +1853,7 @@ describe( 'apiRouter', function( ) {
             await logInAsUserNum( 1 );
             const response = await request( {
                 method: 'GET',
-                url: apiUrl + '/races/' + -10,
+                url: apiUrl + '/races/' + -99,
                 json: true,
                 jar: true,
                 resolveWithFullResponse: true,
@@ -1751,11 +1865,9 @@ describe( 'apiRouter', function( ) {
     } );
 
     describe( 'PUT /races/:id', function( ) {
-        let raceId1, raceId2;
+        let raceIds;
         beforeEach( async function( ) {
-            const ids = await create3UsersAnd3Races();
-            raceId1 = ids[ 0 ];
-            raceId2 = ids[ 1 ];
+            raceIds = await create9UsersFriendsAndRaces( );
         } );
 
         it( 'returns 403 if not logged in', async function( ) {
@@ -1768,7 +1880,7 @@ describe( 'apiRouter', function( ) {
 
             const response = await request( {
                 method: 'PUT',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[0],
                 body: newData,
                 json: true,
                 jar: true,
@@ -1790,7 +1902,7 @@ describe( 'apiRouter', function( ) {
             await logInAsUserNum( 2 );
             const response = await request( {
                 method: 'PUT',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[0],
                 body: newData,
                 json: true,
                 jar: true,
@@ -1829,7 +1941,7 @@ describe( 'apiRouter', function( ) {
             await logInAsUserNum( 1 );
             await request( {
                 method: 'PUT',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[0],
                 body: newData,
                 json: true,
                 jar: true
@@ -1837,47 +1949,47 @@ describe( 'apiRouter', function( ) {
             await logInAsUserNum( 2 );
             await request( {
                 method: 'PUT',
-                url: apiUrl + '/races/' + raceId2,
+                url: apiUrl + '/races/' + raceIds[2],
                 body: newData,
                 json: true,
                 jar: true
             } );
             await logInAsUserNum( 1 );
-            const race1 = await request( {
+            const race0 = await request( {
                 method: 'GET',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[0],
                 json: true,
                 jar: true
             } );
             await logInAsUserNum( 2 );
             const race2 = await request( {
                 method: 'GET',
-                url: apiUrl + '/races/' + raceId2,
+                url: apiUrl + '/races/' + raceIds[2],
                 json: true,
                 jar: true
             } );
 
-            expect( race1.name ).to.equal( newData.name );
+            expect( race0.name ).to.equal( newData.name );
             expect( race2.url ).to.equal( newData.url );
-            expect( race1.resultsUrl ).to.equal( newData.resultsUrl );
+            expect( race0.resultsUrl ).to.equal( newData.resultsUrl );
             expect( race2.date ).to.equal( newData.date.toJSON() );
-            expect( race1.city ).to.equal( newData.city );
+            expect( race0.city ).to.equal( newData.city );
             expect( race2.state ).to.equal( newData.state );
-            expect( race1.country ).to.equal( newData.country );
+            expect( race0.country ).to.equal( newData.country );
             expect( race2.distance ).to.equal( newData.distance );
-            expect( race1.unit ).to.equal( newData.unit );
+            expect( race0.unit ).to.equal( newData.unit );
             expect( race2.bib ).to.equal( newData.bib );
-            expect( race1.result ).to.equal( newData.result );
+            expect( race0.result ).to.equal( newData.result );
             expect( race2.chipTime ).to.equal( newData.chipTime );
-            expect( race1.gunTime ).to.equal( newData.gunTime );
+            expect( race0.gunTime ).to.equal( newData.gunTime );
             expect( race2.overallPlace ).to.equal( newData.overallPlace );
-            expect( race1.overallTotal ).to.equal( newData.overallTotal );
+            expect( race0.overallTotal ).to.equal( newData.overallTotal );
             expect( race2.genderPlace ).to.equal( newData.genderPlace );
-            expect( race1.genderTotal ).to.equal( newData.genderTotal );
+            expect( race0.genderTotal ).to.equal( newData.genderTotal );
             expect( race2.divisionPlace ).to.equal( newData.divisionPlace );
-            expect( race1.divisionTotal ).to.equal( newData.divisionTotal );
+            expect( race0.divisionTotal ).to.equal( newData.divisionTotal );
             expect( race2.divisionName ).to.equal( newData.divisionName );
-            expect( race1.notes ).to.equal( newData.notes );
+            expect( race0.notes ).to.equal( newData.notes );
         } );
 
         it( 'can update just some fields', async function( ) {
@@ -1898,30 +2010,30 @@ describe( 'apiRouter', function( ) {
             await logInAsUserNum( 1 );
             await request( {
                 method: 'PUT',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[0],
                 body: newData,
                 json: true,
                 jar: true
             } );
             await logInAsUserNum( 1 );
-            const race1 = await request( {
+            const race0 = await request( {
                 method: 'GET',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[0],
                 json: true,
                 jar: true
             } );
 
-            expect( race1.name ).to.equal( newData.name );
-            expect( race1.resultsUrl ).to.equal( newData.resultsUrl );
-            expect( race1.city ).to.equal( newData.city );
-            expect( race1.country ).to.equal( newData.country );
-            expect( race1.unit ).to.equal( newData.unit );
-            expect( race1.result ).to.equal( newData.result );
-            expect( race1.gunTime ).to.equal( newData.gunTime );
-            expect( race1.overallTotal ).to.equal( newData.overallTotal );
-            expect( race1.genderTotal ).to.equal( newData.genderTotal );
-            expect( race1.divisionTotal ).to.equal( newData.divisionTotal );
-            expect( race1.notes ).to.equal( newData.notes );
+            expect( race0.name ).to.equal( newData.name );
+            expect( race0.resultsUrl ).to.equal( newData.resultsUrl );
+            expect( race0.city ).to.equal( newData.city );
+            expect( race0.country ).to.equal( newData.country );
+            expect( race0.unit ).to.equal( newData.unit );
+            expect( race0.result ).to.equal( newData.result );
+            expect( race0.gunTime ).to.equal( newData.gunTime );
+            expect( race0.overallTotal ).to.equal( newData.overallTotal );
+            expect( race0.genderTotal ).to.equal( newData.genderTotal );
+            expect( race0.divisionTotal ).to.equal( newData.divisionTotal );
+            expect( race0.notes ).to.equal( newData.notes );
         } );
 
         it( 'does not change username', async function( ) {
@@ -1931,19 +2043,19 @@ describe( 'apiRouter', function( ) {
             await logInAsUserNum( 1 );
             await request( {
                 method: 'PUT',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[0],
                 body: newData,
                 json: true,
                 jar: true
             } );
-            const race1 = await request( {
+            const race0 = await request( {
                 method: 'GET',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[0],
                 json: true,
                 jar: true
             } );
 
-            expect( race1.username ).to.equal( 'username1' );
+            expect( race0.username ).to.equal( 'username1' );
         } );
 
         it( 'does not affect other races', async function( ) {
@@ -1962,11 +2074,17 @@ describe( 'apiRouter', function( ) {
             };
 
             await logInAsUserNum( 1 );
-            await dbService.updateRace( raceId1, newData );
+            await request( {
+                method: 'PUT',
+                url: apiUrl + '/races/' + raceIds[ 0 ],
+                body: newData,
+                json: true,
+                jar: true
+            } );
             await logInAsUserNum( 2 );
             const race2 = await request( {
                 method: 'GET',
-                url: apiUrl + '/races/' + raceId2,
+                url: apiUrl + '/races/' + raceIds[2],
                 json: true,
                 jar: true
             } );
@@ -1976,16 +2094,15 @@ describe( 'apiRouter', function( ) {
     } );
 
     describe( 'DELETE /races/:id', function( ) {
-        let raceId1;
+        let raceIds;
         beforeEach( async function( ) {
-            const ids = await create3UsersAnd3Races();
-            raceId1 = ids[ 0 ];
+            raceIds = await create9UsersFriendsAndRaces( );
         } );
 
         it( 'returns 403 if not logged in', async function( ) {
             const response = await request( {
                 method: 'DELETE',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[0],
                 jar: true,
                 resolveWithFullResponse: true,
                 simple: false
@@ -1998,7 +2115,7 @@ describe( 'apiRouter', function( ) {
             await logInAsUserNum( 2 );
             const response = await request( {
                 method: 'DELETE',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[0],
                 jar: true,
                 resolveWithFullResponse: true,
                 simple: false
@@ -2011,7 +2128,7 @@ describe( 'apiRouter', function( ) {
             await logInAsUserNum( 1 );
             await request( {
                 method: 'DELETE',
-                url: apiUrl + '/races/' + raceId1,
+                url: apiUrl + '/races/' + raceIds[0],
                 jar: true
             } );
             const races1 = await request( {
@@ -2022,13 +2139,13 @@ describe( 'apiRouter', function( ) {
             } );
 
             expect( races1.length ).to.equal( 1 );
-            expect( races1[ 0 ].name ).to.equal( 'Race Name 3' );
+            expect( races1[ 0 ].name ).to.equal( 'Race Name 1' );
         } );
 
         it( 'succeeds if the race already does not exist', async function( ) {
             await request( {
                 method: 'DELETE',
-                url: apiUrl + '/races/' + -10,
+                url: apiUrl + '/races/' + -99,
                 jar: true
             } );
             const races1 = await request( {

@@ -57,27 +57,48 @@ async function isUserVisible( username, requestingUser ) {
     const visibilities = await db.select( 'visibility' )
         .from( 'users' )
         .where( 'username', username );
-    const visibility = visibilities[ 0 ];
+    const visibility = visibilities[ 0 ].visibility;
     if ( requestingUser ) {
-        if ( visibility === 'all' || visibility === 'users' ) {
+        if ( visibility === 'public' || visibility === 'users' ) {
             return true;
         } else if ( visibility === 'friends' ) {
             const friends = await db.select( 'friend' )
                 .from( 'friends' )
                 .where( { username: username, friend: requestingUser } );
-            return (friends.length > 0 );
+            return (friends.length > 0);
         }
         return false;
     } else {
-        return (visibility === 'all');
+        return (visibility === 'public');
     }
 }
 
-async function getUsers( requestingUser ) {
+async function getUsers( ) {
     return await db.select( makeSelectList( usersPublicFields ) )
         .from( 'users' )
         .orderBy( 'fullName' );
-    //!!! Restrict visibility
+}
+
+async function getVisibleUsers( requestingUser ) {
+    if ( requestingUser ) {
+        return await db.select( makeSelectList( usersPublicFields ) )
+            .from( 'users' )
+            .orderBy( 'fullName' )
+            .where( 'username', requestingUser )
+            .orWhere( 'visibility', 'public' )
+            .orWhere( 'visibility', 'users' )
+            .orWhere( function( ) {
+                this.whereExists( db.select( '*' )
+                        .from( 'friends' )
+                        .whereRaw( 'username = users.username and friend = ?', [ requestingUser ] ) )
+                    .andWhere( 'visibility', 'friends' );
+            } );
+    } else {
+        return await db.select( makeSelectList( usersPublicFields ) )
+            .from( 'users' )
+            .orderBy( 'fullName' )
+            .where( 'visibility', 'public' );
+    }
 }
 
 async function getUser( username ) {
@@ -347,7 +368,6 @@ async function getRace( id ) {
 }
 
 async function getUserRaces( username ) {
-    //!!! Restrict visibility
     return await db.select( makeSelectList( racesAllFields ) )
         .from( 'races' )
         .where( 'username', username )
@@ -509,6 +529,7 @@ function convertDataForDb( data, fields ) {
 module.exports = {
     isUserVisible,
     getUsers,
+    getVisibleUsers,
     getUser,
     getPassHash,    //Not for Web API
     createUser,

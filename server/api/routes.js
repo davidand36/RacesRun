@@ -30,7 +30,7 @@ router.put( '/races/:id', koaBody(), updateRace );
 router.delete( '/races/:id', deleteRace );
 
 async function getUsers( ctx ) {
-    await dbService.getUsers( ctx.state.user )
+    await dbService.getVisibleUsers( ctx.state.user )
     .then( users => {
         ctx.response.body = users;
     } )
@@ -165,7 +165,10 @@ async function deleteFriend( ctx ) {
 }
 
 async function getUserRaces( ctx ) {
-    //!!! Check visibility
+    if ( ! await dbService.isUserVisible( ctx.params.username, ctx.state.user ) ) {
+        ctx.response.status = 403;
+        return;
+    }
     await dbService.getUserRaces( ctx.params.username )
     .then( races => {
         ctx.response.body = races;

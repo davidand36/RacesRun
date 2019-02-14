@@ -21,6 +21,122 @@ describe( 'dbService', function( ) {
 
     after( dbService.disconnect );
 
+
+    async function createUsers( n ) {
+        await dbService.createUser( {
+            username: 'username1',
+            fullName: 'Full Name 1',
+            gender: 'male',
+            dateOfBirth: new Date( 1969, 6, 20 ),
+            email: 'username1@example.com',
+            visibility: 'public',
+            password: 'secret1'
+        } );
+        for ( let i = 2; i <= n; ++i ) {
+            const userData = {
+                username: 'username' + i,
+                fullName: 'Full Name ' + i,
+                password: 'secret' + i
+            }
+            switch ( i % 4 ) {
+                case 0: {
+                    userData.visibility = 'public';
+                    break;
+                }
+                case 1: {
+                    userData.visibility = 'users';
+                    break;
+                }
+                case 2: {
+                    userData.visibility = 'friends';
+                    break;
+                }
+                case 3: {
+                    userData.visibility = 'private';
+                    break;
+                }
+            }
+            await dbService.createUser( userData );
+        }
+    }
+
+    async function create3Users( ) {
+        await createUsers( 3 );
+    }
+
+    async function createUsersAndFriends( n ) {
+        await createUsers( n );
+        for ( let i = 1; i <= n; ++i ) {
+            if ( i % 8 === 2 ) {
+                for ( let j = 1; j <= n; ++j ) {
+                    if ( j % 2 === 1 ) {
+                        await dbService.addFriend( 'username' + i, 'username' + j );
+                    }
+                }
+            }
+            if ( i % 8 === 6 ) {
+                for ( let j = 1; j <= n; ++j ) {
+                    if ( (j % 2 === 0) && (i !== j) ) {
+                        await dbService.addFriend( 'username' + i, 'username' + j );
+                    }
+                }
+            }
+        }
+    }
+
+    async function create9UsersAndFriends( ) {
+        await createUsersAndFriends( 9 );
+    }
+
+    async function create3UsersAnd3Races( ) {
+        await create3Users( );
+        const raceId1 = await dbService.createRace( {
+            username: 'username1',
+            name: 'Race Name 1',
+            url: 'https://races.example.com/race1.html',
+            resultsUrl: 'https://racesresults.example.com?race=race1',
+            date: new Date( 2015, 5, 30 ),
+            city: 'Anytown',
+            state: 'WA',
+            country: 'US',
+            distance: 1,
+            unit: 'marathon',
+            bib: '1729',
+            result: 'finished',
+            chipTime: 13424,
+            gunTime: 13484,
+            overallPlace: 500,
+            overallTotal: 1000,
+            genderPlace: 50,
+            genderTotal: 100,
+            divisionPlace: 5,
+            divisionTotal: 10,
+            divisionName: 'M 60-64',
+            notes: 'This was my first marathon. Nice and flat.'
+        } );
+        const raceId2 = await dbService.createRace( {
+            username: 'username2',
+            name: 'Race Name 2',
+            date: new Date( 2016, 3, 5 ),
+            city: 'Sometown',
+            country: 'US',
+            distance: 0.5,
+            unit: 'marathon'
+        } );
+        const raceId3 = await dbService.createRace( {
+            username: 'username1',
+            name: 'Race Name 3',
+            date: new Date( 2018, 7, 14 ),
+            city: 'Mytown',
+            state: 'OR',
+            country: 'US',
+            distance: 5
+        } );
+
+        return [ raceId1, raceId2, raceId3 ];
+    }
+
+
     describe( 'createUser', function( ) {
         it( 'adds a user to the DB', async function( ) {
             const fullData = {
@@ -29,7 +145,7 @@ describe( 'dbService', function( ) {
                 gender: 'male',
                 dateOfBirth: new Date( 1969, 6, 20 ),
                 email: 'username1@example.com',
-                visibility: 'all',
+                visibility: 'public',
                 password: 'secret1'
             };
             const username = await dbService.createUser( fullData );
@@ -202,28 +318,6 @@ describe( 'dbService', function( ) {
         } );
     } );
 
-    async function create3Users( ) {
-        await dbService.createUser( {
-            username: 'username1',
-            fullName: 'Full Name 1',
-            gender: 'male',
-            dateOfBirth: new Date( 1969, 6, 20 ),
-            email: 'username1@example.com',
-            visibility: 'all',
-            password: 'secret1'
-        } );
-        await dbService.createUser( {
-            username: 'username2',
-            fullName: 'Full Name 2',
-            password: 'secret2',
-        } );
-        await dbService.createUser( {
-            username: 'username3',
-            fullName: 'Full Name 3',
-            password: 'secret3',
-        } );
-    }
-
     describe( 'getUsers', function( ) {
         beforeEach( create3Users );
 
@@ -238,6 +332,100 @@ describe( 'dbService', function( ) {
             const users = await dbService.getUsers();
 
             expect( users[ 0 ].email ).to.be.undefined;
+        } );
+    } );
+
+    describe( 'isUserVisible', function( ) {
+        beforeEach( create9UsersAndFriends );
+
+        it( 'gets correct user visibility', async function( ) {
+            const vis10 = await dbService.isUserVisible( 'username1', undefined );
+            const vis20 = await dbService.isUserVisible( 'username2', undefined );
+            const vis30 = await dbService.isUserVisible( 'username3', undefined );
+            const vis40 = await dbService.isUserVisible( 'username4', undefined );
+            const vis50 = await dbService.isUserVisible( 'username5', undefined );
+            const vis60 = await dbService.isUserVisible( 'username6', undefined );
+            const vis11 = await dbService.isUserVisible( 'username1', 'username1' );
+            const vis21 = await dbService.isUserVisible( 'username2', 'username1' );
+            const vis31 = await dbService.isUserVisible( 'username3', 'username1' );
+            const vis41 = await dbService.isUserVisible( 'username4', 'username1' );
+            const vis51 = await dbService.isUserVisible( 'username5', 'username1' );
+            const vis61 = await dbService.isUserVisible( 'username6', 'username1' );
+            const vis12 = await dbService.isUserVisible( 'username1', 'username2' );
+            const vis22 = await dbService.isUserVisible( 'username2', 'username2' );
+            const vis32 = await dbService.isUserVisible( 'username3', 'username2' );
+            const vis42 = await dbService.isUserVisible( 'username4', 'username2' );
+            const vis52 = await dbService.isUserVisible( 'username5', 'username2' );
+            const vis62 = await dbService.isUserVisible( 'username6', 'username2' );
+            const vis13 = await dbService.isUserVisible( 'username1', 'username3' );
+            const vis23 = await dbService.isUserVisible( 'username2', 'username3' );
+            const vis33 = await dbService.isUserVisible( 'username3', 'username3' );
+            const vis43 = await dbService.isUserVisible( 'username4', 'username3' );
+            const vis53 = await dbService.isUserVisible( 'username5', 'username3' );
+            const vis63 = await dbService.isUserVisible( 'username6', 'username3' );
+
+            expect( vis10 ).to.be.true;
+            expect( vis20 ).to.be.false;
+            expect( vis30 ).to.be.false;
+            expect( vis40 ).to.be.true;
+            expect( vis50 ).to.be.false;
+            expect( vis60 ).to.be.false;
+            expect( vis11 ).to.be.true;
+            expect( vis21 ).to.be.true;
+            expect( vis31 ).to.be.false;
+            expect( vis41 ).to.be.true;
+            expect( vis51 ).to.be.true;
+            expect( vis61 ).to.be.false;
+            expect( vis12 ).to.be.true;
+            expect( vis22 ).to.be.true;
+            expect( vis32 ).to.be.false;
+            expect( vis42 ).to.be.true;
+            expect( vis52 ).to.be.true;
+            expect( vis62 ).to.be.true;
+            expect( vis13 ).to.be.true;
+            expect( vis23 ).to.be.true;
+            expect( vis33 ).to.be.true;
+            expect( vis43 ).to.be.true;
+            expect( vis53 ).to.be.true;
+            expect( vis63 ).to.be.false;
+        } );
+    } );
+
+    describe( 'getVisibleUsers', function( ) {
+        beforeEach( create9UsersAndFriends );
+
+        it( 'gets only public users if no requesting user', async function( ) {
+            const users = await dbService.getVisibleUsers( );
+
+            expect( users.length ).to.equal( 3 );
+            expect( users[ 0 ].fullName ).to.equal( 'Full Name 1' ); //public
+            expect( users[ 1 ].fullName ).to.equal( 'Full Name 4' ); //public
+            expect( users[ 2 ].fullName ).to.equal( 'Full Name 8' ); //public
+        } );
+
+        it( 'gets correct visible users (3)', async function( ) {
+            const users = await dbService.getVisibleUsers( 'username3' );
+
+            expect( users.length ).to.equal( 7 );
+            expect( users[ 0 ].fullName ).to.equal( 'Full Name 1' ); //public
+            expect( users[ 1 ].fullName ).to.equal( 'Full Name 2' ); //friends
+            expect( users[ 2 ].fullName ).to.equal( 'Full Name 3' ); //self
+            expect( users[ 3 ].fullName ).to.equal( 'Full Name 4' ); //public
+            expect( users[ 4 ].fullName ).to.equal( 'Full Name 5' ); //users
+            expect( users[ 5 ].fullName ).to.equal( 'Full Name 8' ); //public
+            expect( users[ 6 ].fullName ).to.equal( 'Full Name 9' ); //users
+        } );
+
+        it( 'gets correct visible users (4)', async function() {
+            const users = await dbService.getVisibleUsers( 'username4' );
+
+            expect( users.length ).to.equal( 6 );
+            expect( users[ 0 ].fullName ).to.equal( 'Full Name 1' ); //public
+            expect( users[ 1 ].fullName ).to.equal( 'Full Name 4' ); //self
+            expect( users[ 2 ].fullName ).to.equal( 'Full Name 5' ); //users
+            expect( users[ 3 ].fullName ).to.equal( 'Full Name 6' ); //friends
+            expect( users[ 4 ].fullName ).to.equal( 'Full Name 8' ); //public
+            expect( users[ 5 ].fullName ).to.equal( 'Full Name 9' ); //users
         } );
     } );
 
@@ -501,43 +689,36 @@ describe( 'dbService', function( ) {
         } );
     } );
 
-    async function create3UsersAnd3Friends( ) {
-        await create3Users( );
-        await dbService.addFriend( 'username1', 'username3' );
-        await dbService.addFriend( 'username2', 'username1' );
-        await dbService.addFriend( 'username2', 'username3' );
-   }
-
     describe( 'getFriends', function( ) {
-        beforeEach( create3UsersAnd3Friends );
+        beforeEach( create9UsersAndFriends );
 
         it( 'gets a list of friends of user', async function( ) {
             const friends1 = await dbService.getFriends( 'username1' );
             const friends2 = await dbService.getFriends( 'username2' );
-            const friends3 = await dbService.getFriends( 'username3' );
+            const friends6 = await dbService.getFriends( 'username6' );
 
-            expect( friends1.length ).to.equal( 1 );
-            expect( friends2.length ).to.equal( 2 );
-            expect( friends3.length ).to.equal( 0 );
-            expect( friends1[ 0 ].fullName ).to.equal( 'Full Name 3' );
+            expect( friends1.length ).to.equal( 0 );
+            expect( friends2.length ).to.equal( 5 );
+            expect( friends6.length ).to.equal( 3 );
+            expect( friends2[ 0 ].fullName ).to.equal( 'Full Name 1' );
         } );
     } );
 
     describe( 'deleteFriend', function( ) {
-        beforeEach( create3UsersAnd3Friends );
+        beforeEach( create9UsersAndFriends );
 
         it( 'removes a friend', async function( ) {
             await dbService.deleteFriend( 'username2', 'username1' );
             const friends2 = await dbService.getFriends( 'username2' );
 
-            expect( friends2.length ).to.equal( 1 );
+            expect( friends2.length ).to.equal( 4 );
          } );
 
         it( 'succeeds if the friend record does not exist', async function( ) {
-            await dbService.deleteFriend( 'username1', 'username2' );
-            const friends1 = await dbService.getFriends( 'username1' );
+            await dbService.deleteFriend( 'username6', 'username3' );
+            const friends6 = await dbService.getFriends( 'username6' );
 
-            expect( friends1.length ).to.equal( 1 );
+            expect( friends6.length ).to.equal( 3 );
         } );
     } );
 
@@ -992,54 +1173,6 @@ describe( 'dbService', function( ) {
             expect( error.message ).to.equal( 'Data Error: Invalid value for Division Place' );
         } );
     } );
-
-    async function create3UsersAnd3Races( ) {
-        await create3Users( );
-        const raceId1 = await dbService.createRace( {
-            username: 'username1',
-            name: 'Race Name 1',
-            url: 'https://races.example.com/race1.html',
-            resultsUrl: 'https://racesresults.example.com?race=race1',
-            date: new Date( 2015, 5, 30 ),
-            city: 'Anytown',
-            state: 'WA',
-            country: 'US',
-            distance: 1,
-            unit: 'marathon',
-            bib: '1729',
-            result: 'finished',
-            chipTime: 13424,
-            gunTime: 13484,
-            overallPlace: 500,
-            overallTotal: 1000,
-            genderPlace: 50,
-            genderTotal: 100,
-            divisionPlace: 5,
-            divisionTotal: 10,
-            divisionName: 'M 60-64',
-            notes: 'This was my first marathon. Nice and flat.'
-        } );
-        const raceId2 = await dbService.createRace( {
-            username: 'username2',
-            name: 'Race Name 2',
-            date: new Date( 2016, 3, 5 ),
-            city: 'Sometown',
-            country: 'US',
-            distance: 0.5,
-            unit: 'marathon'
-        } );
-        const raceId3 = await dbService.createRace( {
-            username: 'username1',
-            name: 'Race Name 3',
-            date: new Date( 2018, 7, 14 ),
-            city: 'Mytown',
-            state: 'OR',
-            country: 'US',
-            distance: 5
-        } );
-
-        return [ raceId1, raceId2, raceId3 ];
-    }
 
     describe( 'getRace', function( ) {
         let raceId1, raceId3;

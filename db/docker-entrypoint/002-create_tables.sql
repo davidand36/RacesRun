@@ -1,7 +1,7 @@
 \c races
 
 CREATE TYPE gender AS ENUM ('female', 'male', 'other/none' );
-CREATE TYPE visibility AS ENUM ('all', 'users', 'friends', 'private');
+CREATE TYPE visibility AS ENUM ('public', 'users', 'friends', 'private');
 CREATE TABLE users (
     username        varchar(25) PRIMARY KEY,
     full_name       varchar(100) NOT NULL,
@@ -11,7 +11,8 @@ CREATE TABLE users (
     visibility      visibility NOT NULL DEFAULT 'private',
     CONSTRAINT users_date_of_birth_check CHECK (date_of_birth < CURRENT_DATE)
 );
-CREATE INDEX users_fullname ON users (full_name);
+CREATE INDEX users_fullname_idx ON users (full_name);
+CREATE INDEX users_visibility_idx ON users (visibility);
 GRANT ALL PRIVILEGES ON TABLE users TO dbracesuser;
 
 
