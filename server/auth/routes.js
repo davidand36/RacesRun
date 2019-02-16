@@ -18,7 +18,7 @@ router.post( '/logout', logOut );
 router.get( '/status', getStatus );
 
 function logIn( ctx ) {
-    return passport.authenticate( 'local', function( err, username, info ) {
+    return passport.authenticate( 'local', function( err, username ) {
         if ( err ) {
             console.error( err );
             ctx.response.status = 500;

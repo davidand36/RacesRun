@@ -77,7 +77,7 @@ describe( 'apiRouter', function( ) {
                 username: 'username' + i,
                 fullName: 'Full Name ' + i,
                 password: 'secret' + i
-            }
+            };
             switch ( i % 4 ) {
                 case 0: {
                     userData.visibility = 'public';
