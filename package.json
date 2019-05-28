@@ -47,6 +47,7 @@
     "del": "^3.0.0",
     "gulp": "^4.0.0",
     "gulp-eslint": "^5.0.0",
+    "gulp-handlebars": "^5.0.2",
     "gulp-htmlhint": "^2.2.1",
     "gulp-replace": "^1.0.0",
     "gulp-sass": "^4.0.2",
