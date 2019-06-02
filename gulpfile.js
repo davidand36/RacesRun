@@ -12,6 +12,8 @@
     and https://www.npmjs.com/package/gulp-replace
     and https://www.npmjs.com/package/gulp-sass
     and https://www.npmjs.com/package/node-sass
+    and https://www.npmjs.com/package/gulp-handlebars
+    and https://www.npmjs.com/package/gulp-define-module
 */
 
 const { series, parallel, src, dest } = require( 'gulp' );
@@ -22,6 +24,8 @@ const esLint = require( 'gulp-eslint' );
 const sassLint = require( 'gulp-sass-lint' );
 const replace = require( 'gulp-replace' );
 const sass = require( 'gulp-sass' );
+const handlebars = require( 'gulp-handlebars' );
+const defineModule = require( 'gulp-define-module' );
 
 function cleanPublic( ) {
     return del( [ 'public/' ] );
@@ -98,7 +102,18 @@ function copyJs( ) {
         .pipe( dest( 'public/' ) );
 }
 
-const buildClient = parallel( copyHtml, processScss, processMedia, copyJs );
+function handlebarTemplates() {
+    return src( 'client/**/*.hbs' )
+        .pipe( handlebars() )
+        .pipe( defineModule( 'es6',
+            //At least for now, Handlebars is global
+            { require: { Handlebars: null } } ) )
+        .pipe( dest( 'public/' ) );
+}
+
+const processTemplates = parallel( handlebarTemplates );
+
+const buildClient = parallel( copyHtml, processScss, processMedia, copyJs, processTemplates );
 
 exports.clean = cleanPublic;
 exports.lint = lint;
