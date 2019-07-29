@@ -1,0 +1,38 @@
+// _inputs.scss
+//
+// Styling for inputs
+
+@import 'colors';
+
+input[ type="text" ],
+input[ type="number" ],
+input[ type="email"],
+input[ type="password"],
+input[ type="search"],
+input[ type="tel"],
+input[ type="url"] {
+    border-width: 1px;
+    border-style: solid;
+    border-color: $input-border-color;
+    background-color: white;
+    height: 1.2rem;
+    font-size: 1rem;
+}
+
+:focus {
+    outline: 2px solid $focus-outline-color;
+    outline: 5px auto -webkit-focus-ring-color;
+}
+
+.no-spinner {
+    -moz-appearance: textfield;
+
+    &::-webkit-inner-spin-button {
+        margin: 0;
+        -webkit-appearance: none;
+    }
+}
+
+.time-part {
+    width: 2em;
+}

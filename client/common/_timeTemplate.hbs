@@ -1,0 +1,1 @@
+{{#unless noH}}<input type="text" name="{{name}}_H"  class="time-part" pattern="\d*" inputmode="number"/>:{{/unless}}<input type="text" name="{{name}}_M" class="time-part" pattern="[0-5]?[0-9]?" inputmode="number"/>{{#unless noS}}:<input type="text" name="{{name}}_S" class="time-part" pattern="[0-5]?[0-9]?(\.[0-9]+)?" inputmode="number"/>{{/unless}}

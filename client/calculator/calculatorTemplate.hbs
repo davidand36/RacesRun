@@ -1,0 +1,84 @@
+<div class="running-calculator">
+
+  <form id="distanceTimePace">
+    <div class="input-line">
+      <label for="distance">Distance</label>
+      <input type="number" name="distance" min="0" step="any" class="distance no-spinner" /> (km or mi)
+      <button type="button" id="computeDistance" class="primary-button inline-button">Compute</button>
+    </div>
+
+    <div class="input-line">
+      <label for="time_H">Time</label>
+      {{>time name="time"}}
+      <button type="button" id="computeTime" class="primary-button inline-button">Compute</button>
+    </div>
+
+    <div class="input-line">
+      <label for="pace_M">Pace</label>
+      {{>time name="pace" noH=true}} /(km or mi)
+      <button type="button" id="computePace" class="primary-button inline-button">Compute</button>
+    </div>
+  </form>
+
+  <form id="distanceConversion">
+    <div class="input-line">
+      <label for="distanceKm">Kilometers</label>
+      <input type="number" name="distanceKm" min="0" step="any" class="distance no-spinner" /> km
+      <button type="button" id="convertMiToKm" class="primary-button inline-button">Compute</button>
+    </div>
+
+    <div class="input-line">
+      <label for="distanceMi">Miles</label>
+      <input type="number" name="distanceMi" min="0" step="any" class="distance no-spinner" /> mi
+      <button type="button" id="convertKmToMi" class="primary-button inline-button">Compute</button>
+    </div>
+  </form>
+
+  <form id="paceConversion">
+    <div class="input-line">
+      <label for="perKm_M">Pace per km</label>
+      {{>time name="perKm" noH=true}} /km
+      <button type="button" id="convertPerMiToPerKm" class="primary-button inline-button">Compute</button>
+    </div>
+
+    <div class="input-line">
+      <label for="perMi_M">Pace per mile</label>
+      {{>time name="perMi" noH=true}} /mi
+      <button type="button" id="convertPerKmToPerMi" class="primary-button inline-button">Compute</button>
+    </div>
+  </form>
+
+  <form id="timeConversion">
+    <div class="input-line">
+      <label for="hms_H">Time</label>
+      {{>time name="hms"}}
+      <button type="button" id="convertSecsToHms" class="primary-button inline-button">Compute</button>
+    </div>
+
+    <div class="input-line">
+      <label for="seconds">Seconds</label>
+      <input type="number" name="seconds" min="0" step="any" class="seconds no-spinner" /> s
+      <button type="button" id="convertHmsToSecs" class="primary-button inline-button">Compute</button>
+    </div>
+  </form>
+
+  <form id="paceSpeedConversion">
+    <div class="input-line">
+      <label for="pace_M">Pace</label>
+      {{>time name="pace" noH=true}} /(km or mi)
+      <button type="button" id="convertSpeedToPace" class="primary-button inline-button">Compute</button>
+    </div>
+
+    <div class="input-line">
+      <label for="speed">Speed</label>
+      <input type="number" name="speed" min="0" step="any" class="distance no-spinner" /> /hr
+      <button type="button" id="convertPaceToSpeed" class="primary-button inline-button">Compute</button>
+    </div>
+  </form>
+
+  <p id="marathonAndHalfDefs">
+    <span id="marathon-def">Marathon = 42.195 km</span>
+    <span id="half-marathon-def">Half marathon = 21.0975 km</span>
+  </p>
+
+</div>
