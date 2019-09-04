@@ -85,6 +85,18 @@ describe( 'dbService', function( ) {
     }
 
     async function create9UsersAndFriends( ) {
+        /*
+            Creates usernameN with visibility:
+            1 public
+            2 friends (1,3,5,7,9)
+            3 private
+            4 public
+            5 users
+            6 friends (2,4,8)
+            7 private
+            8 public
+            9 users
+        */
         await createUsersAndFriends( 9 );
     }
 
@@ -99,12 +111,19 @@ describe( 'dbService', function( ) {
             city: 'Anytown',
             state: 'WA',
             country: 'US',
-            distance: 1,
-            unit: 'marathon',
             bib: '1729',
+            scoring: 'individual',
+            legs: [
+                {
+                    distance: 0.5,
+                    unit: 'marathon',
+                    sport: 'running',
+                    terrain: 'trail',
+                    chipTime: 13424,
+                    gunTime: 13484
+                }
+            ],
             result: 'finished',
-            chipTime: 13424,
-            gunTime: 13484,
             overallPlace: 500,
             overallTotal: 1000,
             genderPlace: 50,
@@ -120,8 +139,21 @@ describe( 'dbService', function( ) {
             date: new Date( 2016, 3, 5 ),
             city: 'Sometown',
             country: 'US',
-            distance: 0.5,
-            unit: 'marathon'
+            legs: [
+                {
+                    distance: 750,
+                    unit: 'm',
+                    sport: 'swimming',
+                    terrain: 'open water'
+                },
+                {
+                    distance: 20,
+                    sport: 'cycling'
+                },
+                {
+                    distance: 5
+                }
+            ]
         } );
         const raceId3 = await dbService.createRace( {
             username: 'username1',
@@ -130,7 +162,9 @@ describe( 'dbService', function( ) {
             city: 'Mytown',
             state: 'OR',
             country: 'US',
-            distance: 5
+            legs: [ {
+                distance: 5
+            } ]
         } );
 
         return [ raceId1, raceId2, raceId3 ];
@@ -735,12 +769,19 @@ describe( 'dbService', function( ) {
                 city: 'Anytown',
                 state: 'WA',
                 country: 'US',
-                distance: 0.5,
-                unit: 'marathon',
                 bib: '1729',
+                scoring: 'individual',
+                legs: [
+                    {
+                        distance: 0.5,
+                        unit: 'marathon',
+                        sport: 'running',
+                        terrain: 'trail',
+                        chipTime: 13424,
+                        gunTime: 13484
+                    }
+                ],
                 result: 'finished',
-                chipTime: 13424,
-                gunTime: 13484,
                 overallPlace: 500,
                 overallTotal: 1000,
                 genderPlace: 50,
@@ -762,7 +803,55 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
+            };
+            const id = await dbService.createRace( minimalData );
+
+            expect( id ).to.be.above( 0 );
+        } );
+
+        it( 'ignores extra fields', async function( ) {
+            const minimalData = {
+                username: 'username1',
+                name: 'Race Name 1',
+                date: new Date( 2015, 5, 30 ),
+                city: 'Sometown',
+                country: 'US',
+                legs: [ {
+                    distance: 5
+                } ],
+                foo: 'foo val',
+                distance: 5
+            };
+            const id = await dbService.createRace( minimalData );
+
+            expect( id ).to.be.above( 0 );
+        } );
+
+        it ( 'accepts multiple legs', async function( ) {
+            const minimalData = {
+                username: 'username1',
+                name: 'Race Name 1',
+                date: new Date( 2015, 5, 30 ),
+                city: 'Sometown',
+                country: 'US',
+                legs: [
+                    {
+                        distance: 750,
+                        unit: 'm',
+                        sport: 'swimming',
+                        terrain: 'open water'
+                    },
+                    {
+                        distance: 20,
+                        sport: 'cycling'
+                    },
+                    {
+                        distance: 5
+                    }
+                ]
             };
             const id = await dbService.createRace( minimalData );
 
@@ -775,7 +864,9 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -792,7 +883,9 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -809,7 +902,9 @@ describe( 'dbService', function( ) {
                 name: 'Race Name 1',
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -826,7 +921,9 @@ describe( 'dbService', function( ) {
                 name: 'Race Name 1',
                 date: new Date( 2015, 5, 30 ),
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -843,7 +940,9 @@ describe( 'dbService', function( ) {
                 name: 'Race Name 1',
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -854,7 +953,7 @@ describe( 'dbService', function( ) {
             expect( error.message ).to.equal( 'Data Error: Country is required' );
         } );
 
-        it( 'requires distance', async function () {
+        it( 'requires legs', async function () {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
@@ -868,6 +967,43 @@ describe( 'dbService', function( ) {
                     error = err;
                 } );
 
+            expect( error.message ).to.equal( 'Data Error: At least one leg is required' );
+        } );
+
+        it( 'requires at least one leg', async function() {
+            const badData = {
+                username: 'username1',
+                name: 'Race Name 1',
+                date: new Date( 2015, 5, 30 ),
+                city: 'Sometown',
+                country: 'US',
+                legs: []
+            };
+            let error;
+            await dbService.createRace( badData )
+                .catch( function( err ) {
+                    error = err;
+                } );
+
+            expect( error.message ).to.equal( 'Data Error: At least one leg is required' );
+        } );
+
+        it( 'requires distance', async function() {
+            const badData = {
+                username: 'username1',
+                name: 'Race Name 1',
+                date: new Date( 2015, 5, 30 ),
+                city: 'Sometown',
+                country: 'US',
+                legs: [ {
+                } ]
+            };
+            let error;
+            await dbService.createRace( badData )
+                .catch( function( err ) {
+                    error = err;
+                } );
+
             expect( error.message ).to.equal( 'Data Error: Distance is required' );
         } );
 
@@ -878,7 +1014,9 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -896,7 +1034,9 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -914,7 +1054,9 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: '123456789012345678901234567890123456789012345678901',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -933,7 +1075,9 @@ describe( 'dbService', function( ) {
                 date: new Date( thisYear + 1, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -951,7 +1095,9 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: -10
+                legs: [ {
+                    distance: -10
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -969,7 +1115,9 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0
+                legs: [ {
+                    distance: 0
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -987,8 +1135,10 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
-                unit: 'yards'
+                legs: [ {
+                    distance: 5,
+                    unit: 'yards'
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -999,25 +1149,6 @@ describe( 'dbService', function( ) {
             expect( error.message ).to.equal( 'Data Error: Invalid value for Unit' );
         } );
 
-        it( 'rejects invalid result', async function () {
-            const badData = {
-                username: 'username1',
-                name: 'Race Name 1',
-                date: new Date( 2015, 5, 30 ),
-                city: 'Sometown',
-                country: 'US',
-                distance: 0.5,
-                result: 'fail'
-            };
-            let error;
-            await dbService.createRace( badData )
-                .catch( function ( err ) {
-                    error = err;
-                } );
-
-            expect( error.message ).to.equal( 'Data Error: Invalid value for Result' );
-        } );
-
         it( 'rejects negative chip time', async function () {
             const badData = {
                 username: 'username1',
@@ -1025,8 +1156,10 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
-                chipTime: -3600
+                legs: [ {
+                    distance: 5,
+                    chipTime: -3600
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -1044,8 +1177,10 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
-                gunTime: -600
+                legs: [ {
+                    distance: 5,
+                    gunTime: -600
+                } ]
             };
             let error;
             await dbService.createRace( badData )
@@ -1056,6 +1191,27 @@ describe( 'dbService', function( ) {
             expect( error.message ).to.equal( 'Data Error: Invalid value for Gun Time' );
         } );
 
+        it( 'rejects invalid result', async function() {
+            const badData = {
+                username: 'username1',
+                name: 'Race Name 1',
+                date: new Date( 2015, 5, 30 ),
+                city: 'Sometown',
+                country: 'US',
+                legs: [ {
+                    distance: 5
+                } ],
+                result: 'fail'
+            };
+            let error;
+            await dbService.createRace( badData )
+                .catch( function( err ) {
+                    error = err;
+                } );
+
+            expect( error.message ).to.equal( 'Data Error: Invalid value for Result' );
+        } );
+
         it( 'rejects negative overall place', async function () {
             const badData = {
                 username: 'username1',
@@ -1063,7 +1219,9 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
+                legs: [ {
+                    distance: 5
+                } ],
                 overallPlace: -6
             };
             let error;
@@ -1082,7 +1240,9 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
+                legs: [ {
+                    distance: 5
+                } ],
                 overallPlace: 500,
                 overallTotal: 100
             };
@@ -1102,7 +1262,9 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
+                legs: [ {
+                    distance: 5
+                } ],
                 genderPlace: 0
             };
             let error;
@@ -1121,7 +1283,9 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
+                legs: [ {
+                    distance: 5
+                } ],
                 genderPlace: 50,
                 genderTotal: 10
             };
@@ -1141,7 +1305,9 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
+                legs: [ {
+                    distance: 5
+                } ],
                 divisionPlace: -6
             };
             let error;
@@ -1160,7 +1326,9 @@ describe( 'dbService', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
+                legs: [ {
+                    distance: 5
+                } ],
                 divisionPlace: 50,
                 divisionTotal: 10
             };
@@ -1175,18 +1343,19 @@ describe( 'dbService', function( ) {
     } );
 
     describe( 'getRace', function( ) {
-        let raceId1, raceId3;
+        let ids;
         beforeEach( async function () {
-            const ids = await create3UsersAnd3Races( );
-            raceId1 = ids[ 0 ];
-            raceId3 = ids[ 2 ];
+            ids = await create3UsersAnd3Races( );
         } );
 
         it( 'gets a race by ID', async function( ) {
-            const race1 = await dbService.getRace( raceId1 );
-            const race3 = await dbService.getRace( raceId3 );
+            const race1 = await dbService.getRace( ids[ 0 ] );
+            const race2 = await dbService.getRace( ids[ 1 ] );
+            const race3 = await dbService.getRace( ids[ 2 ] );
 
             expect( race1.genderPlace ).to.equal( 50 );
+            expect( race2.legs.length ).to.equal( 3 );
+            expect( race2.legs[ 1 ].sport ).to.equal( 'cycling' );
             expect( race3.city ).to.equal( 'Mytown' );
         } );
 
@@ -1212,6 +1381,8 @@ describe( 'dbService', function( ) {
             expect( races4.length ).to.equal( 0 );
             expect( races1[ 1 ].state ).to.equal( 'OR' );
             expect( races2[ 0 ].date.valueOf() ).to.equal( new Date( 2016, 3, 5 ).valueOf() );
+            expect( races1[ 1 ].legs.length ).to.equal( 1 );
+            expect( races1[ 1 ].legs[ 0 ].unit ).to.equal( 'km' );
         } );
     } );
 
@@ -1232,12 +1403,23 @@ describe( 'dbService', function( ) {
                 city: 'Oaktown',
                 state: 'CA',
                 country: 'US',
-                distance: 10,
-                unit: 'km',
                 bib: '2525',
+                scoring: 'relay',
+                legs: [
+                    {
+                        distance: 10,
+                        unit: 'km',
+                        chipTime: 2858,
+                        gunTime: 2868
+                    },
+                    {
+                        distance: 20,
+                        unit: 'mi',
+                        sport: 'cycling',
+                        terrain: 'trail'
+                    }
+                ],
                 result: 'disqualified',
-                chipTime: 2858,
-                gunTime: 2868,
                 overallPlace: 100,
                 overallTotal: 500,
                 genderPlace: 10,
@@ -1245,7 +1427,7 @@ describe( 'dbService', function( ) {
                 divisionPlace: 1,
                 divisionTotal: 5,
                 divisionName: 'M 60-69',
-                notes: 'PR'
+                notes: 'Missed a turn.'
             };
 
             await dbService.updateRace( raceId1, newData );
@@ -1260,12 +1442,16 @@ describe( 'dbService', function( ) {
             expect( race1.city ).to.equal( newData.city );
             expect( race2.state ).to.equal( newData.state );
             expect( race1.country ).to.equal( newData.country );
-            expect( race2.distance ).to.equal( newData.distance );
-            expect( race1.unit ).to.equal( newData.unit );
             expect( race2.bib ).to.equal( newData.bib );
+            expect( race1.scoring ).to.equal( newData.scoring );
+            expect( race2.legs.length ).to.equal( newData.legs.length );
+            expect( race1.legs[ 0 ].distance ).to.equal( newData.legs[ 0 ].distance );
+            expect( race2.legs[ 1 ].unit ).to.equal( newData.legs[ 1 ].unit );
+            expect( race1.legs[ 1 ].sport ).to.equal( newData.legs[ 1 ].sport );
+            expect( race2.legs[ 1 ].terrain ).to.equal( newData.legs[ 1 ].terrain );
+            expect( race1.legs[ 0 ].chipTime ).to.equal( newData.legs[ 0 ].chipTime );
+            expect( race2.legs[ 0 ].gunTime ).to.equal( newData.legs[ 0 ].gunTime );
             expect( race1.result ).to.equal( newData.result );
-            expect( race2.chipTime ).to.equal( newData.chipTime );
-            expect( race1.gunTime ).to.equal( newData.gunTime );
             expect( race2.overallPlace ).to.equal( newData.overallPlace );
             expect( race1.overallTotal ).to.equal( newData.overallTotal );
             expect( race2.genderPlace ).to.equal( newData.genderPlace );
@@ -1273,6 +1459,63 @@ describe( 'dbService', function( ) {
             expect( race2.divisionPlace ).to.equal( newData.divisionPlace );
             expect( race1.divisionTotal ).to.equal( newData.divisionTotal );
             expect( race2.divisionName ).to.equal( newData.divisionName );
+            expect( race1.notes ).to.equal( newData.notes );
+        } );
+
+        it( 'can update just specified fields', async function( ) {
+            const newData = {
+                name: 'New Race Name',
+                resultsUrl: 'https://racesresults.example.com?race=newrace',
+                city: 'Oaktown',
+                country: 'US',
+                legs: [
+                    {
+                        distance: 10,
+                        unit: 'km',
+                        chipTime: 2858,
+                    },
+                    {
+                        distance: 20,
+                        unit: 'mi',
+                        sport: 'cycling',
+                        terrain: 'trail'
+                    }
+                ],
+                result: 'disqualified',
+                overallTotal: 500,
+                genderPlace: 10,
+                divisionName: 'M 60-69',
+                notes: 'Missed a turn.'
+            };
+
+            await dbService.updateRace( raceId1, newData );
+            const race1 = await dbService.getRace( raceId1 );
+
+            expect( race1.name ).to.equal( newData.name );
+            expect( race1.url ).to.equal( 'https://races.example.com/race1.html' );
+            expect( race1.resultsUrl ).to.equal( newData.resultsUrl );
+            expect( race1.date.valueOf() ).to.equal( ( new Date( 2015, 5, 30 )).valueOf() );
+            expect( race1.city ).to.equal( newData.city );
+            expect( race1.state ).to.equal( 'WA' );
+            expect( race1.country ).to.equal( newData.country );
+            expect( race1.bib ).to.equal( '1729' );
+            expect( race1.scoring ).to.equal( 'individual' );
+            expect( race1.legs.length ).to.equal( newData.legs.length );
+            expect( race1.legs[ 0 ].distance ).to.equal( newData.legs[ 0 ].distance );
+            expect( race1.legs[ 0 ].unit ).to.equal( newData.legs[ 0 ].unit );
+            expect( race1.legs[ 1 ].sport ).to.equal( newData.legs[ 1 ].sport );
+            expect( race1.legs[ 0 ].terrain ).to.equal( 'road' );
+            expect( race1.legs[ 1 ].terrain ).to.equal( newData.legs[ 1 ].terrain );
+            expect( race1.legs[ 0 ].chipTime ).to.equal( newData.legs[ 0 ].chipTime );
+            expect( race1.legs[ 0 ].gunTime ).to.be.null;
+            expect( race1.result ).to.equal( newData.result );
+            expect( race1.overallPlace ).to.equal( 500 );
+            expect( race1.overallTotal ).to.equal( newData.overallTotal );
+            expect( race1.genderPlace ).to.equal( newData.genderPlace );
+            expect( race1.genderTotal ).to.equal( 100 );
+            expect( race1.divisionPlace ).to.equal( 5 );
+            expect( race1.divisionTotal ).to.equal( 10 );
+            expect( race1.divisionName ).to.equal( newData.divisionName );
             expect( race1.notes ).to.equal( newData.notes );
         } );
 
@@ -1292,9 +1535,7 @@ describe( 'dbService', function( ) {
                 resultsUrl: 'https://racesresults.example.com?race=newrace',
                 city: 'Oaktown',
                 country: 'US',
-                unit: 'km',
                 result: 'disqualified',
-                gunTime: 2868,
                 overallTotal: 500,
                 genderTotal: 50,
                 divisionTotal: 5,

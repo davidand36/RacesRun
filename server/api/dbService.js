@@ -330,12 +330,9 @@ const racesUpdateFields = [
     'city',
     'state',
     'country',
-    'distance',
-    'unit',
     'bib',
+    'scoring',
     'result',
-    'chipTime',
-    'gunTime',
     'overallPlace',
     'overallTotal',
     'genderPlace',
@@ -356,22 +353,54 @@ const racesAllFields = [
     ...racesNonkeyFields
 ];
 
+const legsUpdateFields = [
+    'distance',
+    'unit',
+    'sport',
+    'terrain',
+    'chipTime',
+    'gunTime'
+];
+
+const legsNonkeyFields = [
+    'race',
+    ...legsUpdateFields
+];
+
+const legsAllFields = [
+    'id',
+    ...legsNonkeyFields
+];
+
 async function getRace( id ) {
     const races = await db.select( makeSelectList( racesAllFields ) )
         .from( 'races' )
         .where( 'id', id );
     if ( races.length > 0 ) {
-        return races[ 0 ];
+        let race = races[ 0 ];
+        const legs = await db.select( makeSelectList( legsAllFields ) )
+            .from( 'legs' )
+            .where( 'race', id );
+        race.legs = legs;
+        return race;
     } else {
         return null;
     }
 }
 
 async function getUserRaces( username ) {
-    return await db.select( makeSelectList( racesAllFields ) )
+    let races = await db.select( makeSelectList( racesAllFields ) )
         .from( 'races' )
         .where( 'username', username )
         .orderBy( 'date' );
+    for ( let i = 0, numRaces = races.length; i < numRaces; ++i ) {
+        let race = races[ i ];
+        let legs = await db.select( makeSelectList( legsAllFields ) )
+            .from( 'legs' )
+            .where( 'race', race.id );
+        race.legs = legs;
+    }
+    return races;
 }
 
 async function createRace( data ) {
@@ -381,20 +410,47 @@ async function createRace( data ) {
     .catch( function ( err ) {
         throw convertRacesDbError( err );
     } );
-    return ids[ 0 ];
+    if ( ! data.legs || data.legs.length === 0 ) {
+        throw new Error( 'Data Error: At least one leg is required' );
+    }
+    const id = ids[ 0 ];
+    for ( let i = 0, numLegs = data.legs.length; i < numLegs; ++i ) {
+        let leg = data.legs[ i ];
+        leg.race = id;
+        await db.insert( convertDataForDb( leg, legsNonkeyFields ) )
+            .into( 'legs' )
+            .catch( function( err ) {
+                throw convertLegsDbError( err );
+            } );
+    }
+    return id;
 }
 
 async function updateRace( id, data ) {
     let newData = convertDataForDb( data, racesUpdateFields );
-    if ( Object.keys( newData ).length === 0 ) {
-        return Promise.resolve();
+    if ( Object.keys( newData ).length > 0 ) {
+        await db( 'races' )
+            .update( newData )
+            .where( 'id', id )
+            .catch( function( err ) {
+                throw convertRacesDbError( err );
+            } );
     }
-    await db( 'races' )
-        .update( newData )
-        .where( 'id', id )
-        .catch( function ( err ) {
-            throw convertRacesDbError( err );
-        } );
+    if ( data.legs && data.legs.length > 0 ) {
+        await db( 'legs' )
+            .del()
+            .where( 'race', id );
+        for ( let i = 0, numLegs = data.legs.length; i < numLegs; ++i ) {
+            let leg = data.legs[ i ];
+            leg.race = id;
+            await db.insert( convertDataForDb( leg, legsNonkeyFields ) )
+                .into( 'legs' )
+                .catch( function( err ) {
+                    throw convertLegsDbError( err );
+                } );
+        }
+    }
+    return Promise.resolve();
 }
 
 async function deleteRace( id ) {
@@ -421,18 +477,6 @@ function convertRacesDbError( err ) {
                 }
                 case 'races_date_check': {
                     message = 'Data Error: Invalid value for Date';
-                    break;
-                }
-                case 'races_distance_check': {
-                    message = 'Data Error: Invalid value for Distance';
-                    break;
-                }
-                case 'races_chip_time_check': {
-                    message = 'Data Error: Invalid value for Chip Time';
-                    break;
-                }
-                case 'races_gun_time_check': {
-                    message = 'Data Error: Invalid value for Gun Time';
                     break;
                 }
                 case 'races_overall_place_check': {
@@ -483,8 +527,66 @@ function convertRacesDbError( err ) {
             'name': 'Race Name',
             'url': 'URL',
             'results_url': 'Results URL',
-            'distance_unit': 'Unit',
             'result_type': 'Result'
+        };
+        return specialNames[ dbFieldName ] || _.startCase( dbFieldName );
+    }
+}
+
+function convertLegsDbError( err ) {
+    let message;
+    // These are errors reported by PostgreSQL.
+    switch ( err.code ) {
+        case '23502': { //not_null_violation
+            const fieldName = convertName( err.column );
+            message = `Data Error: ${fieldName} is required`;
+            break;
+        }
+        case '23503':   //foreign_key_violation
+        case '23514': { //check_violation
+            switch ( err.constraint ) {
+                case 'legs_distance_check': {
+                    message = 'Data Error: Invalid value for Distance';
+                    break;
+                }
+                case 'legs_chip_time_check': {
+                    message = 'Data Error: Invalid value for Chip Time';
+                    break;
+                }
+                case 'legs_gun_time_check': {
+                    message = 'Data Error: Invalid value for Gun Time';
+                    break;
+                }
+                default: {
+                    console.log( 'err: ', err );
+                    break;
+                }
+            }
+            break;
+        }
+        case '22P02': { //invalid_text_representation
+            const re = /invalid input value for enum (\w+)/;
+            const match = err.toString().match( re );
+            if ( match ) {
+                const fieldName = convertName( match[ 1 ] );
+                message = `Data Error: Invalid value for ${fieldName}`;
+            } else {
+                message = 'Data Error: Invalid text value';
+            }
+            break;
+        }
+        default: {
+            console.log( 'err: ', err );
+            message = err.toString();
+            break;
+        }
+    }
+
+    return new Error( message );
+
+    function convertName( dbFieldName ) {
+        const specialNames = {
+            'distance_unit': 'Unit'
         };
         return specialNames[ dbFieldName ] || _.startCase( dbFieldName );
     }

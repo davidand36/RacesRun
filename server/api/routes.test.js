@@ -163,19 +163,26 @@ describe( 'apiRouter', function( ) {
         await logInAsUserNum( 1 );
         const raceData1 = {
             username: 'username1',
-            name: 'Race Name 0',
-            url: 'https://races.example.com/race0.html',
-            resultsUrl: 'https://racesresults.example.com?race=race0',
+            name: 'Race Name 1',
+            url: 'https://races.example.com/race1.html',
+            resultsUrl: 'https://racesresults.example.com?race=race1',
             date: new Date( 2015, 5, 30 ),
             city: 'Anytown',
             state: 'WA',
             country: 'US',
-            distance: 1,
-            unit: 'marathon',
             bib: '1729',
+            scoring: 'individual',
+            legs: [
+                {
+                    distance: 0.5,
+                    unit: 'marathon',
+                    sport: 'running',
+                    terrain: 'trail',
+                    chipTime: 13424,
+                    gunTime: 13484
+                }
+            ],
             result: 'finished',
-            chipTime: 13424,
-            gunTime: 13484,
             overallPlace: 500,
             overallTotal: 1000,
             genderPlace: 50,
@@ -204,7 +211,9 @@ describe( 'apiRouter', function( ) {
                     date: new Date( 2000 + r, (r % 12) + 1, 1 ),
                     city: 'City ' + r,
                     country: 'Country ' + r,
-                    distance: 10
+                    legs: [ {
+                        distance: 10 + r
+                    } ]
                 };
                 const raceId = await request( {
                     method: 'POST',
@@ -891,7 +900,7 @@ describe( 'apiRouter', function( ) {
             expect( response.statusCode ).to.equal( 403 );
         } );
 
-        it( 'returns 403 if not logged in as a different user', async function( ) {
+        it( 'returns 403 if logged in as a different user', async function( ) {
             await logInAsUserNum( 2 );
             const response = await request( {
                 method: 'POST',
@@ -1101,7 +1110,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             const response = await request( {
                 method: 'POST',
@@ -1123,7 +1134,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             await logInAsUserNum( 2 );
             const response = await request( {
@@ -1143,18 +1156,25 @@ describe( 'apiRouter', function( ) {
             const fullData = {
                 username: 'username1',
                 name: 'Race Name 1',
-                url: 'https://races.example.com/race0.html',
-                resultsUrl: 'https://racesresults.example.com?race=race0',
+                url: 'https://races.example.com/race1.html',
+                resultsUrl: 'https://racesresults.example.com?race=race1',
                 date: new Date( 2015, 5, 30 ),
                 city: 'Anytown',
                 state: 'WA',
                 country: 'US',
-                distance: 0.5,
-                unit: 'marathon',
                 bib: '1729',
+                scoring: 'individual',
+                legs: [
+                    {
+                        distance: 0.5,
+                        unit: 'marathon',
+                        sport: 'running',
+                        terrain: 'trail',
+                        chipTime: 13424,
+                        gunTime: 13484
+                    }
+                ],
                 result: 'finished',
-                chipTime: 13424,
-                gunTime: 13484,
                 overallPlace: 500,
                 overallTotal: 1000,
                 genderPlace: 50,
@@ -1183,7 +1203,34 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
+            };
+            await logInAsUserNum( 1 );
+            const id = await await request( {
+                method: 'POST',
+                url: apiUrl + '/races',
+                body: minimalData,
+                json: true,
+                jar: true
+            } );
+
+            expect( id ).to.be.above( 0 );
+        } );
+
+        it( 'ignores extra fields', async function() {
+            const minimalData = {
+                username: 'username1',
+                name: 'Race Name 1',
+                date: new Date( 2015, 5, 30 ),
+                city: 'Sometown',
+                country: 'US',
+                legs: [ {
+                    distance: 5
+                } ],
+                foo: 'foo val',
+                distance: 5
             };
             await logInAsUserNum( 1 );
             const id = await await request( {
@@ -1203,7 +1250,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1225,7 +1274,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1248,7 +1299,9 @@ describe( 'apiRouter', function( ) {
                 name: 'Race Name 1',
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1271,7 +1324,9 @@ describe( 'apiRouter', function( ) {
                 name: 'Race Name 1',
                 date: new Date( 2015, 5, 30 ),
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1294,7 +1349,9 @@ describe( 'apiRouter', function( ) {
                 name: 'Race Name 1',
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1311,13 +1368,62 @@ describe( 'apiRouter', function( ) {
             expect( response.body.error ).to.equal( 'Data Error: Country is required' );
         } );
 
-        it( 'requires distance', async function( ) {
+        it( 'requires legs', async function() {
             const badData = {
                 username: 'username1',
                 name: 'Race Name 1',
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US'
+            };
+            await logInAsUserNum( 1 );
+            const response = await request( {
+                method: 'POST',
+                url: apiUrl + '/races',
+                body: badData,
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 400 );
+            expect( response.body.error ).to.equal( 'Data Error: At least one leg is required' );
+        } );
+
+        it( 'requires at least one leg', async function() {
+            const badData = {
+                username: 'username1',
+                name: 'Race Name 1',
+                date: new Date( 2015, 5, 30 ),
+                city: 'Sometown',
+                country: 'US',
+                legs: []
+            };
+            await logInAsUserNum( 1 );
+            const response = await request( {
+                method: 'POST',
+                url: apiUrl + '/races',
+                body: badData,
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 400 );
+            expect( response.body.error ).to.equal( 'Data Error: At least one leg is required' );
+        } );
+
+        it( 'requires distance', async function( ) {
+            const badData = {
+                username: 'username1',
+                name: 'Race Name 1',
+                date: new Date( 2015, 5, 30 ),
+                city: 'Sometown',
+                country: 'US',
+                legs: [ {
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1341,7 +1447,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1364,7 +1472,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1387,7 +1497,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: '123456789012345678901234567890123456789012345678901',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1412,7 +1524,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( thisYear + 1, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5
+                legs: [ {
+                    distance: 5
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1436,7 +1550,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: -10
+                legs: [ {
+                    distance: -10
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1460,7 +1576,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0
+                legs: [ {
+                    distance: 0
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1484,8 +1602,10 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
-                unit: 'yards'
+                legs: [ {
+                    distance: 880,
+                    unit: 'yards'
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1502,31 +1622,6 @@ describe( 'apiRouter', function( ) {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Unit' );
         } );
 
-        it( 'rejects invalid result', async function( ) {
-            const badData = {
-                username: 'username1',
-                name: 'Race Name 1',
-                date: new Date( 2015, 5, 30 ),
-                city: 'Sometown',
-                country: 'US',
-                distance: 0.5,
-                result: 'fail'
-            };
-            await logInAsUserNum( 1 );
-            const response = await request( {
-                method: 'POST',
-                url: apiUrl + '/races',
-                body: badData,
-                json: true,
-                jar: true,
-                resolveWithFullResponse: true,
-                simple: false
-            } );
-
-            expect( response.statusCode ).to.equal( 400 );
-            expect( response.body.error ).to.equal( 'Data Error: Invalid value for Result' );
-        } );
-
         it( 'rejects negative chip time', async function( ) {
             const badData = {
                 username: 'username1',
@@ -1534,8 +1629,10 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
-                chipTime: -3600
+                legs: [ {
+                    distance: 5,
+                    chipTime: -3600
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1559,8 +1656,10 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
-                gunTime: -600
+                legs: [ {
+                    distance: 5,
+                    gunTime: -600
+                } ]
             };
             await logInAsUserNum( 1 );
             const response = await request( {
@@ -1577,6 +1676,33 @@ describe( 'apiRouter', function( ) {
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Gun Time' );
         } );
 
+        it( 'rejects invalid result', async function() {
+            const badData = {
+                username: 'username1',
+                name: 'Race Name 1',
+                date: new Date( 2015, 5, 30 ),
+                city: 'Sometown',
+                country: 'US',
+                legs: [ {
+                    distance: 5
+                } ],
+                result: 'fail'
+            };
+            await logInAsUserNum( 1 );
+            const response = await request( {
+                method: 'POST',
+                url: apiUrl + '/races',
+                body: badData,
+                json: true,
+                jar: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+
+            expect( response.statusCode ).to.equal( 400 );
+            expect( response.body.error ).to.equal( 'Data Error: Invalid value for Result' );
+        } );
+
         it( 'rejects negative overall place', async function( ) {
             const badData = {
                 username: 'username1',
@@ -1584,7 +1710,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
+                legs: [ {
+                    distance: 5
+                } ],
                 overallPlace: -6
             };
             await logInAsUserNum( 1 );
@@ -1609,7 +1737,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
+                legs: [ {
+                    distance: 5
+                } ],
                 overallPlace: 500,
                 overallTotal: 100
             };
@@ -1635,7 +1765,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
+                legs: [ {
+                    distance: 5
+                } ],
                 genderPlace: 0
             };
             await logInAsUserNum( 1 );
@@ -1660,7 +1792,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
+                legs: [ {
+                    distance: 5
+                } ],
                 genderPlace: 50,
                 genderTotal: 10
             };
@@ -1686,7 +1820,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
+                legs: [ {
+                    distance: 5
+                } ],
                 divisionPlace: -6
             };
             await logInAsUserNum( 1 );
@@ -1711,7 +1847,9 @@ describe( 'apiRouter', function( ) {
                 date: new Date( 2015, 5, 30 ),
                 city: 'Sometown',
                 country: 'US',
-                distance: 0.5,
+                legs: [ {
+                    distance: 5
+                } ],
                 divisionPlace: 50,
                 divisionTotal: 10
             };
@@ -1922,12 +2060,23 @@ describe( 'apiRouter', function( ) {
                 city: 'Oaktown',
                 state: 'CA',
                 country: 'US',
-                distance: 10,
-                unit: 'km',
                 bib: '2525',
+                scoring: 'relay',
+                legs: [
+                    {
+                        distance: 10,
+                        unit: 'km',
+                        chipTime: 2858,
+                        gunTime: 2868
+                    },
+                    {
+                        distance: 20,
+                        unit: 'mi',
+                        sport: 'cycling',
+                        terrain: 'trail'
+                    }
+                ],
                 result: 'disqualified',
-                chipTime: 2858,
-                gunTime: 2868,
                 overallPlace: 100,
                 overallTotal: 500,
                 genderPlace: 10,
@@ -1935,7 +2084,7 @@ describe( 'apiRouter', function( ) {
                 divisionPlace: 1,
                 divisionTotal: 5,
                 divisionName: 'M 60-69',
-                notes: 'PR'
+                notes: 'Missed a turn.'
             };
 
             await logInAsUserNum( 1 );
@@ -1976,12 +2125,16 @@ describe( 'apiRouter', function( ) {
             expect( race0.city ).to.equal( newData.city );
             expect( race2.state ).to.equal( newData.state );
             expect( race0.country ).to.equal( newData.country );
-            expect( race2.distance ).to.equal( newData.distance );
-            expect( race0.unit ).to.equal( newData.unit );
             expect( race2.bib ).to.equal( newData.bib );
+            expect( race0.scoring ).to.equal( newData.scoring );
+            expect( race2.legs.length ).to.equal( newData.legs.length );
+            expect( race0.legs[ 0 ].distance ).to.equal( newData.legs[ 0 ].distance );
+            expect( race2.legs[ 1 ].unit ).to.equal( newData.legs[ 1 ].unit );
+            expect( race0.legs[ 1 ].sport ).to.equal( newData.legs[ 1 ].sport );
+            expect( race2.legs[ 1 ].terrain ).to.equal( newData.legs[ 1 ].terrain );
+            expect( race0.legs[ 0 ].chipTime ).to.equal( newData.legs[ 0 ].chipTime );
+            expect( race2.legs[ 0 ].gunTime ).to.equal( newData.legs[ 0 ].gunTime );
             expect( race0.result ).to.equal( newData.result );
-            expect( race2.chipTime ).to.equal( newData.chipTime );
-            expect( race0.gunTime ).to.equal( newData.gunTime );
             expect( race2.overallPlace ).to.equal( newData.overallPlace );
             expect( race0.overallTotal ).to.equal( newData.overallTotal );
             expect( race2.genderPlace ).to.equal( newData.genderPlace );
@@ -1998,13 +2151,24 @@ describe( 'apiRouter', function( ) {
                 resultsUrl: 'https://racesresults.example.com?race=newrace',
                 city: 'Oaktown',
                 country: 'US',
-                unit: 'km',
+                legs: [
+                    {
+                        distance: 10,
+                        unit: 'km',
+                        chipTime: 2858,
+                    },
+                    {
+                        distance: 20,
+                        unit: 'mi',
+                        sport: 'cycling',
+                        terrain: 'trail'
+                    }
+                ],
                 result: 'disqualified',
-                gunTime: 2868,
                 overallTotal: 500,
-                genderTotal: 50,
-                divisionTotal: 5,
-                notes: 'PR'
+                genderPlace: 10,
+                divisionName: 'M 60-69',
+                notes: 'Missed a turn.'
             };
 
             await logInAsUserNum( 1 );
@@ -2024,15 +2188,30 @@ describe( 'apiRouter', function( ) {
             } );
 
             expect( race0.name ).to.equal( newData.name );
+            expect( race0.url ).to.equal( 'https://races.example.com/race1.html' );
             expect( race0.resultsUrl ).to.equal( newData.resultsUrl );
+            expect( race0.date.valueOf() ).to.equal( ( new Date( 2015, 5, 30 ) ).toJSON() );
             expect( race0.city ).to.equal( newData.city );
+            expect( race0.state ).to.equal( 'WA' );
             expect( race0.country ).to.equal( newData.country );
-            expect( race0.unit ).to.equal( newData.unit );
+            expect( race0.bib ).to.equal( '1729' );
+            expect( race0.scoring ).to.equal( 'individual' );
+            expect( race0.legs.length ).to.equal( newData.legs.length );
+            expect( race0.legs[ 0 ].distance ).to.equal( newData.legs[ 0 ].distance );
+            expect( race0.legs[ 0 ].unit ).to.equal( newData.legs[ 0 ].unit );
+            expect( race0.legs[ 1 ].sport ).to.equal( newData.legs[ 1 ].sport );
+            expect( race0.legs[ 0 ].terrain ).to.equal( 'road' );
+            expect( race0.legs[ 1 ].terrain ).to.equal( newData.legs[ 1 ].terrain );
+            expect( race0.legs[ 0 ].chipTime ).to.equal( newData.legs[ 0 ].chipTime );
+            expect( race0.legs[ 0 ].gunTime ).to.be.null;
             expect( race0.result ).to.equal( newData.result );
-            expect( race0.gunTime ).to.equal( newData.gunTime );
+            expect( race0.overallPlace ).to.equal( 500 );
             expect( race0.overallTotal ).to.equal( newData.overallTotal );
-            expect( race0.genderTotal ).to.equal( newData.genderTotal );
-            expect( race0.divisionTotal ).to.equal( newData.divisionTotal );
+            expect( race0.genderPlace ).to.equal( newData.genderPlace );
+            expect( race0.genderTotal ).to.equal( 100 );
+            expect( race0.divisionPlace ).to.equal( 5 );
+            expect( race0.divisionTotal ).to.equal( 10 );
+            expect( race0.divisionName ).to.equal( newData.divisionName );
             expect( race0.notes ).to.equal( newData.notes );
         } );
 
@@ -2064,9 +2243,7 @@ describe( 'apiRouter', function( ) {
                 resultsUrl: 'https://racesresults.example.com?race=newrace',
                 city: 'Oaktown',
                 country: 'US',
-                unit: 'km',
                 result: 'disqualified',
-                gunTime: 2868,
                 overallTotal: 500,
                 genderTotal: 50,
                 divisionTotal: 5,
@@ -2081,15 +2258,14 @@ describe( 'apiRouter', function( ) {
                 json: true,
                 jar: true
             } );
-            await logInAsUserNum( 2 );
-            const race2 = await request( {
+            const race1 = await request( {
                 method: 'GET',
-                url: apiUrl + '/races/' + raceIds[2],
+                url: apiUrl + '/races/' + raceIds[1],
                 json: true,
                 jar: true
             } );
 
-            expect( race2.name ).to.equal( 'Race Name 2' );
+            expect( race1.name ).to.equal( 'Race Name 1' );
         } );
     } );
 
