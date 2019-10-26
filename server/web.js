@@ -10,6 +10,8 @@
     and https://www.npmjs.com/package/koa-logger
     and https://www.npmjs.com/package/koa-compress
     and https://www.npmjs.com/package/koa-router
+    and https://www.npmjs.com/package/koa-connect-history-api-fallback
+    and https://www.npmjs.com/package/connect-history-api-fallback
     and https://www.npmjs.com/package/koa-static
 */
 
@@ -22,6 +24,7 @@ const session = require( 'koa-session' );
 const passport = require( 'koa-passport' );
 const compress = require( 'koa-compress' );
 const Router = require( 'koa-router' );
+const singlePage = require( 'koa-connect-history-api-fallback' );
 const koaStatic = require( 'koa-static' );
 require( './auth/authService' );
 const authRoutes = require( './auth/routes' );
@@ -42,6 +45,16 @@ koa.use( compress( ) );
 router.use( '/auth', authRoutes.routes(), authRoutes.allowedMethods() );
 router.use( '/api/v1', apiRoutes.routes(), apiRoutes.allowedMethods() );
 koa.use( router.routes() ).use( router.allowedMethods() );
+koa.use( singlePage( {
+    index: '/index.html',
+    rewrites: [
+        {
+            from: /^\/calculator(\/(index.html)?)?$/,
+            to: '/calculator/index.html'
+        }
+    ],
+    verbose: false
+} ) );
 koa.use( koaStatic( './public') );
 
 const port = process.env.WEB_PORT || process.env.PORT || 80;
