@@ -836,7 +836,7 @@ describe( 'apiRouter', function( ) {
         } );
     } );
 
-    describe( 'DELETE  /users/:username', function( ) {
+    describe( 'DELETE /users/:username', function( ) {
         beforeEach( create9UsersAndFriends );
 
         it( 'returns 403 if not logged in', async function( ) {

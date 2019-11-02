@@ -49,7 +49,7 @@ koa.use( singlePage( {
     index: '/index.html',
     rewrites: [
         {
-            from: /^\/calculator(\/(index.html)?)?$/,
+            from: /^\/calculator\/?$/,
             to: '/calculator/index.html'
         }
     ],
