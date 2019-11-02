@@ -9,6 +9,8 @@
     and https://www.npmjs.com/package/koa-favicon
     and https://www.npmjs.com/package/koa-logger
     and https://www.npmjs.com/package/koa-compress
+    and https://www.npmjs.com/package/koa-session
+    and https://www.npmjs.com/package/koa-passport
     and https://www.npmjs.com/package/koa-router
     and https://www.npmjs.com/package/koa-connect-history-api-fallback
     and https://www.npmjs.com/package/connect-history-api-fallback
@@ -38,10 +40,10 @@ koa.keys = [ process.env.SIGNED_COOKIE_KEY ];
 koa.use( helmet( ) );
 koa.use( favicon( './public/favicon.ico' ) );
 koa.use( logger( ) );
+koa.use( compress( ) );
 koa.use( session( {}, koa ) );
 koa.use( passport.initialize() );
 koa.use( passport.session() );
-koa.use( compress( ) );
 router.use( '/auth', authRoutes.routes(), authRoutes.allowedMethods() );
 router.use( '/api/v1', apiRoutes.routes(), apiRoutes.allowedMethods() );
 koa.use( router.routes() ).use( router.allowedMethods() );
