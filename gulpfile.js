@@ -16,7 +16,7 @@
     and https://www.npmjs.com/package/gulp-define-module
 */
 
-const { series, parallel, src, dest } = require( 'gulp' );
+const { src, dest, series, parallel } = require( 'gulp' );
 const pkg = require( './package.json' );
 const del = require( 'del' );
 const htmlHint = require( 'gulp-htmlhint' );
