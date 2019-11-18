@@ -46,7 +46,6 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "del": "^3.0.0",
-    "handlebars": "4.4.2",
     "gulp": "^4.0.0",
     "gulp-define-module": "^0.1.5",
     "gulp-eslint": "^5.0.0",
@@ -55,6 +54,7 @@
     "gulp-replace": "^1.0.0",
     "gulp-sass": "^4.0.2",
     "gulp-sass-lint": "^1.4.0",
+    "handlebars": "^4.5.2",
     "mocha": "^5.2.0",
     "node-sass": "^4.10.0",
     "nyc": "^13.1.0",
