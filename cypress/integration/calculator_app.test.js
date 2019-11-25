@@ -1,9 +1,26 @@
 context( 'Running Calculator', () => {
-    beforeEach( () => {
-        cy.visit( '/calculator' );
+    describe( 'App loading', () => {
+        it( 'works with the URL path /calculator', () => {
+            cy.visit( '/calculator' );
+            cy.get( '#distanceTimePace' );
+        } );
+
+        it( 'works with the URL path /calculator/', () => {
+            cy.visit( '/calculator/' );
+            cy.get( '#distanceTimePace' );
+        } );
+
+        it( 'works with the URL path /calculator/index.html', () => {
+            cy.visit( '/calculator/index.html' );
+            cy.get( '#distanceTimePace' );
+        } );
     } );
 
     describe( 'Distance, Time, Pace', () => {
+        beforeEach( () => {
+            cy.visit( '/calculator' );
+        } );
+
         it( 'computes the distance', () => {
             cy.get( '#distanceTimePace [name="time_H"]' )
                 .type( '1' );
