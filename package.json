@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
+    "cypress": "^3.6.1",
     "del": "^3.0.0",
     "gulp": "^4.0.0",
     "gulp-define-module": "^0.1.5",

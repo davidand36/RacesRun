@@ -2,3 +2,7 @@
 node_modules/
 public/
 .nyc_output/
+cypress/**/example.*
+cypress/integration/examples/
+cypress/screenshots/
+cypress/videos/
