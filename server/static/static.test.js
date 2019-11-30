@@ -87,7 +87,7 @@ describe( 'staticRouter', function( ) {
         expect( response.body ).to.match( /Stylesheet for Races Run app/ );
     } );
 
-    it( 'Routes GET /calculator to running calculator index.html', async function() {
+    it( "Routes GET /calculator to runner's calculator index.html", async function() { //eslint-disable-line quotes
         const response = await request( {
             url: urlBase + '/calculator',
             headers: {
@@ -98,10 +98,10 @@ describe( 'staticRouter', function( ) {
 
         expect( response.statusCode ).to.equal( 200 );
         expect( response.headers[ 'content-type' ] ).to.match( /text\/html/ );
-        expect( response.body ).to.match( /<title>Running Calculator<\/title>/ );
+        expect( response.body ).to.match( /<title>Runner's Calculator<\/title>/ );
     } );
 
-    it( 'Routes GET /calculator/ to running calculator index.html', async function() {
+    it( "Routes GET /calculator/ to runner's calculator index.html", async function() { //eslint-disable-line quotes
         const response = await request( {
             url: urlBase + '/calculator/',
             headers: {
@@ -112,10 +112,10 @@ describe( 'staticRouter', function( ) {
 
         expect( response.statusCode ).to.equal( 200 );
         expect( response.headers[ 'content-type' ] ).to.match( /text\/html/ );
-        expect( response.body ).to.match( /<title>Running Calculator<\/title>/ );
+        expect( response.body ).to.match( /<title>Runner's Calculator<\/title>/ );
     } );
 
-    it( 'Routes GET /calculator/index.html to running calculator index.html', async function() {
+    it( "Routes GET /calculator/index.html to runner's calculator index.html", async function() { //eslint-disable-line quotes
         const response = await request( {
             url: urlBase + '/calculator/index.html',
             headers: {
@@ -126,7 +126,7 @@ describe( 'staticRouter', function( ) {
 
         expect( response.statusCode ).to.equal( 200 );
         expect( response.headers[ 'content-type' ] ).to.match( /text\/html/ );
-        expect( response.body ).to.match( /<title>Running Calculator<\/title>/ );
+        expect( response.body ).to.match( /<title>Runner's Calculator<\/title>/ );
     } );
 
     it( 'Routes GET /calculator/anypath to main index.html', async function() {
@@ -154,6 +154,6 @@ describe( 'staticRouter', function( ) {
 
         expect( response.statusCode ).to.equal( 200 );
         expect( response.headers[ 'content-type' ] ).to.match( /text\/css/ );
-        expect( response.body ).to.match( /Stylesheet for running calculator/ );
+        expect( response.body ).to.match( /Stylesheet for runner's calculator/ );
     } );
 } );
