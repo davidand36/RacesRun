@@ -18,6 +18,9 @@ export function getInputValue( $input ) {
     const type = $input.attr( 'type' );
     if ( type === 'checkbox' ) {
         return $input.prop( 'checked' );
+    } else if ( type === 'radio' ) {
+        let $checkedButton = $input.filter( ':checked' );
+        return $checkedButton.val();
     } else if ( type === 'number' ) {
         let val = parseFloat( $input.val() );
         return isNaN( val ) ? null : val;
@@ -81,21 +84,23 @@ export function setTimeInputValue( name, seconds, $form ) {
 
 //=============================================================================
 
-export function getFormData( $form, options ) {
+export function getFormData( $form, options = {} ) {
     let data = {};
     $( ':input:not(button)', $form ).each( function() {
         const $input = $( this );
         const name = $input.attr( 'name' );
         if ( ! isTimeField( name ) ) {
-            const val = getInputValue( $input );
+            const val = getNamedInputValue( name );
             data[ name ] = val;
         }
     } );
 
-    options.timeFields.forEach( function( name ) {
-        const val = getTimeInputValue( name, $form );
-        data[ name ] = val;
-    } );
+    if ( options.timeFields ) {
+        options.timeFields.forEach( function( name ) {
+            const val = getTimeInputValue( name, $form );
+            data[ name ] = val;
+        } );
+    }
 
     return data;
 
