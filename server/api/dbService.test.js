@@ -281,13 +281,13 @@ describe( 'dbService', function( ) {
                 username: 'username1',
                 fullName: 'Full Name 1',
                 email: 'username1@example.com',
-                password: 'secret1',
+                password: 'secret1'
             };
             const data2 = {
                 username: 'username2',
                 fullName: 'Full Name 2',
                 email: 'username1@example.com',
-                password: 'secret2',
+                password: 'secret2'
             };
             let error;
             await dbService.createUser( data1 );
@@ -304,7 +304,7 @@ describe( 'dbService', function( ) {
                 username: 'username1',
                 fullName: 'Full Name 1',
                 gender: 'woman',
-                password: 'secret1',
+                password: 'secret1'
             };
 
             let error;
@@ -339,7 +339,7 @@ describe( 'dbService', function( ) {
                 username: 'username1',
                 fullName: 'Full Name 1',
                 dateOfBirth: new Date( thisYear + 1, 6, 20 ),
-                password: 'secret1',
+                password: 'secret1'
             };
 
             let error;
@@ -349,6 +349,21 @@ describe( 'dbService', function( ) {
                 } );
 
             expect( error.message ).to.equal( 'Data Error: Invalid Date of Birth' );
+        } );
+
+        it( 'accepts empty optional fields', async function() {
+            const minimalData = {
+                username: 'username1',
+                fullName: 'Full Name 1',
+                gender: '',
+                dateOfBirth: '',
+                email: '',
+                visibility: '',
+                password: 'secret1'
+            };
+            const username = await dbService.createUser( minimalData );
+
+            expect( username ).to.equal( minimalData.username );
         } );
     } );
 

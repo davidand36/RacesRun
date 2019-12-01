@@ -442,6 +442,28 @@ describe( 'apiRouter', function( ) {
             expect( response.statusCode ).to.equal( 400 );
             expect( response.body.error ).to.equal( 'Data Error: Invalid value for Visibility' );
         } );
+
+        it( 'accepts empty optional fields', async function() {
+            const response = await request( {
+                method: 'POST',
+                url: apiUrl + '/users',
+                body: {
+                    username: 'username1',
+                    fullName: 'Full Name 1',
+                    gender: '',
+                    dateOfBirth: '',
+                    email: '',
+                    visibility: '',
+                    password: 'secret1'
+                },
+                json: true,
+                resolveWithFullResponse: true,
+                simple: false
+            } );
+            expect( response.statusCode ).to.equal( 201 );
+            expect( response.body ).to.equal( 'username1' );
+            expect( response.body.error ).to.be.undefined;
+        } );
     } );
 
     describe( 'GET /users', function( ) {
@@ -525,7 +547,7 @@ describe( 'apiRouter', function( ) {
             expect( response.statusCode ).to.equal( 403 );
         } );
 
-        it( 'returns 403 if not logged in as a different user', async function( ) {
+        it( 'returns 403 if logged in as a different user', async function( ) {
             await logInAsUserNum( 2 );
             const response = await request( {
                 method: 'GET',

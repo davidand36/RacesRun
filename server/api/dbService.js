@@ -624,6 +624,9 @@ function convertDataForDb( data, fields ) {
     dbData = _.mapKeys( dbData, function( val, key ) {
         return _.snakeCase( key );
     } );
+    dbData = _.pickBy( dbData, function( val ) {
+        return (val || val === 0); //So no empty strings. Avoids date problems...
+    } );
     return dbData;
 }
 
