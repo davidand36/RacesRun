@@ -1,0 +1,56 @@
+<div class="signup-page">
+  <form id="signUpForm">
+    <div id="errorMsg"></div>
+
+    <div class="input-line">
+      <label for="username">Username</label>
+      <input type="text" name="username" required maxlength="25" />
+    </div>
+
+    <div class="input-line">
+      <label for="fullName">Full name</label>
+      <input type="text" name="fullName" required maxlength="100" />
+    </div>
+
+    <div class="input-line">
+      <label>Gender</label>
+      <label>
+      <input type="radio" name="gender" value="female" />
+      female</label>
+      <label>
+      <input type="radio" name="gender" value="male" />
+      male</label>
+      <label>
+      <input type="radio" name="gender" value="other/none" />
+      other/none</label>
+    </div>
+
+    <div class="input-line">
+      <label for="dateOfBirth">Date of birth</label>
+      <input type="date" name="dateOfBirth" />
+    </div>
+
+    <div class="input-line">
+      <label for="email">Email</label>
+      <input type="email" name="email" maxlength="250" />
+    </div>
+
+    <div class="input-line">
+      <label for="visibility">Visibility</label>
+      <select name="visibility">
+        <option value="public">Public</option>
+        <option value="users">Other users</option>
+        <!--<option value="friends">Friends</option>-->
+        <option value="private" selected>Private</option>
+      </select>
+    </div>
+
+    <div class="input-line">
+      <label for="password">Password</label>
+      <input type="password" name="password" required maxlength="1000" />
+      <button type="button" id="showHidePassword">Show</button>
+    </div>
+
+    <button type="button" id="signUp">Sign Up</button>
+  </form>
+</div>
