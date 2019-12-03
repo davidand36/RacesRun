@@ -15,55 +15,56 @@ h1 {
     margin: 0 auto;
     max-width: 23rem;
     font-family: $body-font-family;
-}
 
-form {
-    margin-bottom: 1rem;
-    border: solid thin;
-    border-radius: 0.25rem;
-    padding: 0.5rem;
-}
 
-.input-line:not( :last-of-type ) {
-    margin-bottom: 0.3rem;
-}
+    form {
+        margin-bottom: 1rem;
+        border: solid thin;
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+    }
 
-label {
-    display: inline-block;
-    text-align: right;
-}
+    .input-line:not( :last-of-type ) {
+        margin-bottom: 0.3rem;
+    }
 
-@media (min-width: 24rem) {
     label {
-        width: 6.5rem;
+        display: inline-block;
+        text-align: right;
     }
-}
 
-button {
-    float: right;
-    margin-right: 0.25rem;
-}
+    @media (min-width: 24rem) {
+        label {
+            width: 6.5rem;
+        }
+    }
 
-input.distance {
-    width: 5em;
-}
+    button {
+        float: right;
+        margin-right: 0.25rem;
+    }
 
-@media (max-width: 22rem ) {
     input.distance {
-        width: 4em;
+        width: 5em;
     }
-}
 
-input.seconds {
-    width: 6em;
-}
+    @media (max-width: 22rem ) {
+        input.distance {
+            width: 4em;
+        }
+    }
 
-#half-marathon-def {
-    float: right;
-}
+    input.seconds {
+        width: 6em;
+    }
 
-@media (max-width: 22.9rem) {
     #half-marathon-def {
-        float: left;
+        float: right;
+    }
+
+    @media (max-width: 22.9rem) {
+        #half-marathon-def {
+            float: left;
+        }
     }
 }

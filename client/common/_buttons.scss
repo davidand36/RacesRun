@@ -5,13 +5,18 @@
 @import 'colors';
 @import 'fonts';
 
-.inline-button {
+button {
     border-width: thin;
     border-style: solid;
     border-radius: 0.25rem;
-    padding: 0.1rem 0.4rem;
+    padding: 0.25rem 1.5rem;
     white-space: nowrap;
     font-family: $body-font-family;
+    font-size: 1rem;
+}
+
+.inline-button {
+    padding: 0.1rem 0.4rem;
     font-size: 0.8rem;
 }
 
