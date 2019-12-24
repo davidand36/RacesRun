@@ -41,9 +41,10 @@ function toggleSubmenu( ) {
 
 //=============================================================================
 
-function setCurrentItem( index ) {
-    const $item = $( 'nav li' ).eq( index );
-    $item.addClass( 'current' );
+function setCurrentItem( name ) {
+    $( 'nav li' ).removeClass( 'current' );
+    const $items = $( 'nav' ).find( '.nav-' + name );
+    $items.addClass( 'current' );
 }
 
 //=============================================================================

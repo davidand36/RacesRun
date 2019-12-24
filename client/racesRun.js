@@ -54,21 +54,21 @@ function showHomePage( ctx ) {
 //=============================================================================
 
 function showLoginPage( ) {
-    nav.setCurrentItem( 1 );
+    nav.setCurrentItem( 'home' );
     logInPage.run( );
 }
 
 //=============================================================================
 
 function showSignUpPage( ) {
-    nav.setCurrentItem( 1 );
+    nav.setCurrentItem( 'home' );
     signUpPage.run( );
 }
 
 //=============================================================================
 
 function showProfilePage() {
-    nav.setCurrentItem( 4 );
+    nav.setCurrentItem( 'profile' );
     $( 'h1' ).html( 'Profile Page' );
     $( 'main' ).empty();
 }
@@ -77,10 +77,10 @@ function showProfilePage() {
 
 function showRacesPage( username, isOwn ) {
     if ( isOwn ) {
-        nav.setCurrentItem( 1 );
+        nav.setCurrentItem( 'home' );
         $( 'h1' ).html( 'My Races Run' );
     } else {
-        nav.setCurrentItem( 3 );
+        nav.setCurrentItem( 'others' );
         $( 'h1' ).html( 'Races Run by ' + username );
     }
     $( 'main' ).empty();
@@ -89,7 +89,7 @@ function showRacesPage( username, isOwn ) {
 //=============================================================================
 
 function showCalcPage( ) {
-    nav.setCurrentItem( 2 );
+    nav.setCurrentItem( 'calc' );
     $( 'h1' ).html( 'Calculator Page' );
     $( 'main' ).empty();
 }
@@ -97,7 +97,7 @@ function showCalcPage( ) {
 //=============================================================================
 
 function showOtherRunnersPage( ) {
-    nav.setCurrentItem( 3 );
+    nav.setCurrentItem( 'others' );
     $( 'h1' ).html( 'Other Runners Page' );
     $( 'main' ).empty();
 }
