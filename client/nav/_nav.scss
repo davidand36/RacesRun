@@ -1,0 +1,131 @@
+// _nav.js
+//
+// Styling for navigation bar
+
+@import '../common/colors';
+@import '../common/fonts';
+
+nav {
+    margin: 0;
+    padding: 0;
+    font-family: $heading-font-family;
+
+    ul {
+        margin: 0;
+        background-color: $primary-dark-color;
+        padding: 0;
+        list-style-type: none;
+    }
+
+    a,
+    span {
+        color: $primary-light-color;
+    }
+
+    li {
+        padding: 0.8rem 1rem;
+    }
+
+    li.current > a,
+    li.current > span {
+        color: white;
+        font-weight: bold;
+    }
+
+    .logo span {
+        color: $primary-highlight-color;
+        font-size: 1.25em;
+    }
+
+    .menu-item:hover,
+    .submenu-parent span:hover {
+        background: $primary-dark-lighter-1;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    > ul {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+
+        #menu-toggle {
+            order: 2;
+
+            & span:after {
+                content: "☰";
+            }
+        }
+
+        .menu-item {
+            display: none;
+            order: 3;
+            width: 100%;
+            text-align: center;
+        }
+
+        .submenu-parent {
+            order: 4;
+            padding: 0;
+            width: 100%;
+            text-align: center;
+
+            & > span {
+                display: none;
+            }
+
+            li {
+                padding: 0.8rem 0;
+            }
+        }
+
+        &.open {
+            #menu-toggle span:after {
+                content: "×";
+            }
+
+            .menu-item {
+                display: block;
+            }
+        }
+
+        @media (min-width: 40rem) {
+            li {
+                position: relative;
+                flex: 1 0 auto;
+            }
+
+            #menu-toggle {
+                display: none;
+            }
+
+            .menu-item,
+            .submenu-parent {
+                display: block;
+                width: auto;
+            }
+
+            .submenu-parent {
+                & > span {
+                    display: block;
+                    padding: 0.8rem 0;
+                }
+
+                ul {
+                    display: none;
+                    position: absolute;
+                    width: 100%;
+                }
+
+                &:hover ul,
+                & ul.open {
+                    display: flex;
+                    flex-direction: column;
+                }
+            }
+        }
+    }
+}

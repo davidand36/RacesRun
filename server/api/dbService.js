@@ -633,7 +633,7 @@ function convertDataForDb( data, fields ) {
 
 module.exports = {
     isUserVisible,
-    getUsers,
+    getUsers,       //Not for Web API
     getVisibleUsers,
     getUser,
     getPassHash,    //Not for Web API
