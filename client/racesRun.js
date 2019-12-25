@@ -19,6 +19,7 @@ import signUpPage from './user/signUpPage.js';
 page( '*', getAuthStatus );
 page( '*', runNavBar );
 page( '/', showHomePage );
+page( '/logout', logOut );
 page( '/signup', showSignUpPage );
 page( '/profile', showProfilePage );
 page( '/calc', showCalcPage );
@@ -56,6 +57,13 @@ function showHomePage( ctx ) {
 function showLoginPage( ) {
     nav.setCurrentItem( 'home' );
     logInPage.run( );
+}
+
+//=============================================================================
+
+async function logOut( ) {
+    await auth.logOut( );
+    page( '/' );
 }
 
 //=============================================================================

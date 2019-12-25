@@ -34,7 +34,7 @@ function logIn( username, password ) {
 function logOut( ) {
     return request( {
         method: 'POST',
-        url: '/auth/login'
+        url: '/auth/logout'
     } );
 }
 
