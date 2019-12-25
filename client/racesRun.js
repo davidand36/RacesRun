@@ -13,6 +13,7 @@ import auth from './user/auth.js';
 import nav from './nav/nav.js';
 import logInPage from './user/logInPage.js';
 import signUpPage from './user/signUpPage.js';
+import calcPage from './calculator/calcPage.js';
 
 //=============================================================================
 
@@ -98,8 +99,7 @@ function showRacesPage( username, isOwn ) {
 
 function showCalcPage( ) {
     nav.setCurrentItem( 'calc' );
-    $( 'h1' ).html( 'Calculator Page' );
-    $( 'main' ).empty();
+    calcPage.run( );
 }
 
 //=============================================================================

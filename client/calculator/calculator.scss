@@ -2,69 +2,9 @@
 //
 /* Stylesheet for runner's calculator */
 
-@import '../common/inputs';
-@import '../common/buttons';
-@import '../common/fonts';
+@import './calc';
 
 h1 {
     text-align: center;
     font-family: $heading-font-family;
-}
-
-.running-calculator {
-    margin: 0 auto;
-    max-width: 23rem;
-    font-family: $body-font-family;
-
-
-    form {
-        margin-bottom: 1rem;
-        border: solid thin;
-        border-radius: 0.25rem;
-        padding: 0.5rem;
-    }
-
-    .input-line:not( :last-of-type ) {
-        margin-bottom: 0.3rem;
-    }
-
-    label {
-        display: inline-block;
-        text-align: right;
-    }
-
-    @media (min-width: 24rem) {
-        label {
-            width: 6.5rem;
-        }
-    }
-
-    button {
-        float: right;
-        margin-right: 0.25rem;
-    }
-
-    input.distance {
-        width: 5em;
-    }
-
-    @media (max-width: 22rem ) {
-        input.distance {
-            width: 4em;
-        }
-    }
-
-    input.seconds {
-        width: 6em;
-    }
-
-    #half-marathon-def {
-        float: right;
-    }
-
-    @media (max-width: 22.9rem) {
-        #half-marathon-def {
-            float: left;
-        }
-    }
 }
