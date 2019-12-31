@@ -44,7 +44,7 @@ function addOpenWindowButton( ) {
         if ( !calculatorWindow || calculatorWindow.closed ) {
             const url = '/calculator';
             const windowName = 'runnersCalculatorWindow';
-            const options = 'width=380,height=580,resizable,scrollbars';
+            const options = 'width=400,height=600,resizable,scrollbars';
             calculatorWindow = window.open( url, windowName, options );
         } else {
             calculatorWindow.focus( );

@@ -2,10 +2,6 @@
 //
 // Styling of Runner's Calculator
 
-@import '../common/inputs';
-@import '../common/buttons';
-@import '../common/fonts';
-
 .running-calculator {
     margin: 0 auto;
     max-width: 23rem;
@@ -19,8 +15,8 @@
         padding: 0.5rem;
     }
 
-    .input-line:not( :last-of-type ) {
-        margin-bottom: 0.3rem;
+    .input-line:last-of-type {
+        margin-bottom: 0;
     }
 
     label {

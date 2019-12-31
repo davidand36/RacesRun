@@ -2,6 +2,12 @@
 //
 /* Stylesheet for runner's calculator */
 
+@import '../common/reset';
+@import '../common/colors';
+@import '../common/fonts';
+@import '../common/forms';
+@import '../common/inputs';
+@import '../common/buttons';
 @import './calc';
 
 h1 {

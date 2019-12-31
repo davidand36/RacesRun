@@ -1,0 +1,19 @@
+// _forms.scss
+//
+// General styling for forms
+
+.input-line {
+    margin-bottom: 0.3rem;
+}
+
+label {
+    display: inline-block;
+    text-align: right;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-around;
+}
