@@ -2,23 +2,42 @@
 //
 // Styling for buttons
 
-button {
+@mixin button {
     border-width: thin;
     border-style: solid;
     border-radius: 0.25rem;
     padding: 0.25rem 1.5rem;
+    text-decoration: none;
+    line-height: normal;
     white-space: nowrap;
     font-family: $body-font-family;
     font-size: 1rem;
 }
 
-.inline-button {
-    padding: 0.1rem 0.4rem;
-    font-size: 0.8rem;
-}
-
 .primary-button {
+    @include button;
     border-color: $primary-dark-color;
     background-color: $primary-light-color;
     color: $primary-dark-color;
+
+    &:hover {
+        background-color: $primary-light-lighter-2;
+    }
+}
+
+.secondary-button {
+    @include button;
+    border-color: $secondary-dark-color;
+    background-color: $secondary-light-color;
+    color: $secondary-dark-color;
+
+    &:hover {
+        background-color: $secondary-light-lighter-2;
+    }
+}
+
+.inline-button {
+    @include button;
+    padding: 0.1rem 0.4rem;
+    font-size: 0.8rem;
 }

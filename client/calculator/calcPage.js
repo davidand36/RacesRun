@@ -33,6 +33,7 @@ function addOpenWindowButton( ) {
         .css( 'text-align', 'center' );
     const $btn = $( '<button>' )
         .attr( 'type', 'button' )
+        .addClass( 'secondary-button' )
         .text( 'Open in a New Window' );
     $div.append( $btn );
     $( 'main' ).append( $div );

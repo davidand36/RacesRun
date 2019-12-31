@@ -4,10 +4,17 @@
 
 $primary-dark-color: rgb( 0, 13, 116 );
 $primary-light-color: rgb( 185, 217, 235 );
-
 $primary-highlight-color: rgb( 255, 255, 0 );
+$primary-dark-lighter-1: scale-color( $primary-dark-color, $lightness: 20% );
+$primary-light-lighter-1: scale-color( $primary-light-color, $lightness: 20% );
+$primary-light-lighter-2: scale-color( $primary-light-color, $lightness: 60% );
+
+$secondary-dark-color: rgb( 40, 40, 40 );
+$secondary-light-color: rgb( 220, 220, 220 );
+$secondary-dark-lighter-1: scale-color( $secondary-dark-color, $lightness: 20% );
+$secondary-light-lighter-1: scale-color( $secondary-light-color, $lightness: 20% );
+$secondary-light-lighter-2: scale-color( $secondary-light-color, $lightness: 60% );
 
 $input-border-color: rgb( 180, 180, 180 );
 $focus-outline-color: rgb( 165, 199, 254 );
 
-$primary-dark-lighter-1: scale-color( $primary-dark-color, $lightness: 20% );
