@@ -1,0 +1,39 @@
+// _logIn.scss
+//
+// Styling for sign-up page
+
+.signup-page {
+    margin: 0 auto;
+    max-width: 28rem;
+
+    form {
+        margin-bottom: 1rem;
+    }
+
+    label {
+        width: 6rem;
+    }
+
+    input[ type="radio" ] {
+        margin-left: 0.6rem;
+    }
+
+    .radio-label {
+        width: auto;
+        text-align: left;
+    }
+
+    input[ name="username" ],
+    input[ name="fullName" ],
+    input[ name="email" ] {
+        width: 20rem;
+    }
+
+    input[ name="password" ] {
+        width: 18rem;
+    }
+
+    select {
+        width: 10rem;
+    }
+}

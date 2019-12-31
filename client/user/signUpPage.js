@@ -40,6 +40,7 @@ function render() {
 function setEventHandlers() {
     const signUpForm = $( '#signUpForm' );
     $( '#signUp' ).on( 'click', signUp );
+    $( '#cancel' ).on( 'click', cancel );
     $( '#showHidePassword' ).on( 'click', togglePasswordVisibility );
 
     //-------------------------------------------------------------------------
@@ -56,6 +57,12 @@ function setEventHandlers() {
         .catch( function( errorMsg ) {
             $( '#errorMsg' ).text( errorMsg );
         } );
+    }
+
+    //-------------------------------------------------------------------------
+
+    function cancel( ) {
+        page( '/' );
     }
 
     //-------------------------------------------------------------------------

@@ -4,40 +4,40 @@
 
     <div class="input-line">
       <label for="username">Username</label>
-      <input type="text" name="username" required maxlength="25" />
+      <input type="text" name="username" id="username" required maxlength="25" />
     </div>
 
     <div class="input-line">
       <label for="fullName">Full name</label>
-      <input type="text" name="fullName" required maxlength="100" />
+      <input type="text" name="fullName" id="fullName" required maxlength="100" />
     </div>
 
     <div class="input-line">
       <label>Gender</label>
-      <label>
+      <label class="radio-label">
       <input type="radio" name="gender" value="female" />
       female</label>
-      <label>
+      <label class="radio-label">
       <input type="radio" name="gender" value="male" />
-      male</label>
-      <label>
-      <input type="radio" name="gender" value="other/none" />
-      other/none</label>
+      male</label class="radio-label">
+      <label class="radio-label">
+      <input type="radio" name="gender" value="non-binary" />
+      neither/non-binary</label class="radio-label">
     </div>
 
     <div class="input-line">
       <label for="dateOfBirth">Date of birth</label>
-      <input type="date" name="dateOfBirth" />
+      <input type="date" name="dateOfBirth" id="dateOfBirth" />
     </div>
 
     <div class="input-line">
       <label for="email">Email</label>
-      <input type="email" name="email" maxlength="250" />
+      <input type="email" name="email" id="email" maxlength="250" />
     </div>
 
     <div class="input-line">
       <label for="visibility">Visibility</label>
-      <select name="visibility">
+      <select name="visibility" id="visibility">
         <option value="public">Public</option>
         <option value="users">Other users</option>
         <!--<option value="friends">Friends</option>-->
@@ -47,10 +47,13 @@
 
     <div class="input-line">
       <label for="password">Password</label>
-      <input type="password" name="password" required maxlength="1000" />
+      <input type="password" name="password" id="password" required maxlength="1000" />
       <button type="button" id="showHidePassword" class="inline-button">Show</button>
     </div>
 
-    <button type="button" id="signUp" class="primary-button">Sign Up</button>
+    <div class="controls">
+      <button type="button" id="cancel" class="secondary-button">Cancel</button>
+      <button type="button" id="signUp" class="primary-button">Sign Up</button>
+    </div>
   </form>
 </div>
