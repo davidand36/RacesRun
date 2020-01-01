@@ -49,7 +49,7 @@ function setEventHandlers() {
         const formData = getFormData( signUpForm );
         user.create( formData )
         .then( function( ) {
-            auth.logIn( formData.username, formData.password );
+            return auth.logIn( formData.username, formData.password );
         } )
         .then( function( ) {
             page( '/' );

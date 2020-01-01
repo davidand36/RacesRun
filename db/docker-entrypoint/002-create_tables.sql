@@ -1,6 +1,6 @@
 \c races
 
-CREATE TYPE gender AS ENUM ('female', 'male', 'non-binary' );
+CREATE TYPE gender AS ENUM ('female', 'male', 'non-binary');
 CREATE TYPE visibility AS ENUM ('public', 'users', 'friends', 'private');
 CREATE TABLE users (
     username        varchar(25) PRIMARY KEY,
