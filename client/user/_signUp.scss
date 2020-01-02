@@ -26,11 +26,35 @@
     input[ name="username" ],
     input[ name="fullName" ],
     input[ name="email" ] {
-        width: 20rem;
+        width: 13rem;
+
+        @media (min-width: 22rem) {
+            width: 15rem;
+        }
+
+        @media (min-width: 24rem) {
+            width: 17rem;
+        }
+
+        @media (min-width: 28rem) {
+            width: 20rem;
+        }
     }
 
     input[ name="password" ] {
-        width: 18rem;
+        width: 10rem;
+
+        @media (min-width: 22rem) {
+            width: 12rem;
+        }
+
+        @media (min-width: 24rem) {
+            width: 14rem;
+        }
+
+        @media (min-width: 28rem) {
+            width: 17rem;
+        }
     }
 
     select {

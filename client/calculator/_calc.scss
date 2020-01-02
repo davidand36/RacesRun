@@ -7,6 +7,10 @@
     max-width: 23rem;
     font-family: $body-font-family;
 
+    input[ type="text" ],
+    input[ type="number" ] {
+        height: 1.2rem;
+    }
 
     form {
         margin-bottom: 1rem;
