@@ -12,7 +12,6 @@
 
     label {
         width: 5rem;
-
         @media (min-width: 26rem) {
             width: 6rem;
         }
@@ -20,15 +19,12 @@
 
     input {
         width: 14rem;
-
         @media (min-width: 22rem) {
             width: 16rem;
         }
-
         @media (min-width: 24rem) {
             width: 18rem;
         }
-
         @media (min-width: 28rem) {
             width: 20rem;
         }
