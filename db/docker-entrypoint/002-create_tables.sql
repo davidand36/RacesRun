@@ -1,11 +1,10 @@
 \c races
 
-CREATE TYPE gender AS ENUM ('female', 'male', 'non-binary');
 CREATE TYPE visibility AS ENUM ('public', 'users', 'friends', 'private');
 CREATE TABLE users (
     username        varchar(25) PRIMARY KEY,
     full_name       varchar(100) NOT NULL,
-    gender          gender,
+    gender          varchar(25),
     date_of_birth   date,
     email           varchar(250) UNIQUE,
     visibility      visibility NOT NULL DEFAULT 'private',
@@ -35,7 +34,6 @@ GRANT ALL PRIVILEGES ON TABLE friends TO dbracesuser;
 
 
 CREATE SEQUENCE races_seq;
-CREATE TYPE result_type AS ENUM ('finished', 'did not start', 'did not finish', 'disqualified');
 CREATE TABLE races (
     id              integer PRIMARY KEY DEFAULT nextval('races_seq'),
     username        varchar(25) NOT NULL,
@@ -48,7 +46,7 @@ CREATE TABLE races (
     country         varchar(25) NOT NULL,
     bib             varchar(25),
     scoring         varchar(25) DEFAULT 'individual',
-    result          result_type NOT NULL DEFAULT 'finished',
+    result          varchar(25) DEFAULT 'finished',
     overall_place   integer,
     overall_total   integer,
     gender_place    integer,

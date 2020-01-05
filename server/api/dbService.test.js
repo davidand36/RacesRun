@@ -299,23 +299,6 @@ describe( 'dbService', function( ) {
             expect( error.message ).to.equal( 'Data Error: This Email Address is already registered' );
         } );
 
-        it( 'rejects invalid gender', async function( ) {
-            const badData = {
-                username: 'username1',
-                fullName: 'Full Name 1',
-                gender: 'woman',
-                password: 'secret1'
-            };
-
-            let error;
-            await dbService.createUser( badData )
-                .catch( function ( err ) {
-                    error = err;
-                } );
-
-            expect( error.message ).to.equal( 'Data Error: Invalid value for Gender' );
-        } );
-
         it( 'rejects invalid visibility', async function( ) {
             const badData = {
                 username: 'username1',
@@ -1203,27 +1186,6 @@ describe( 'dbService', function( ) {
                 } );
 
             expect( error.message ).to.equal( 'Data Error: Invalid value for Gun Time' );
-        } );
-
-        it( 'rejects invalid result', async function() {
-            const badData = {
-                username: 'username1',
-                name: 'Race Name 1',
-                date: new Date( 2015, 5, 30 ),
-                city: 'Sometown',
-                country: 'US',
-                legs: [ {
-                    distance: 5
-                } ],
-                result: 'fail'
-            };
-            let error;
-            await dbService.createRace( badData )
-                .catch( function( err ) {
-                    error = err;
-                } );
-
-            expect( error.message ).to.equal( 'Data Error: Invalid value for Result' );
         } );
 
         it( 'rejects negative overall place', async function () {
