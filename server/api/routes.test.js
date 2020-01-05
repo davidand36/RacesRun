@@ -453,7 +453,6 @@ describe( 'apiRouter', function( ) {
                     gender: '',
                     dateOfBirth: '',
                     email: '',
-                    visibility: '',
                     password: 'secret1'
                 },
                 json: true,

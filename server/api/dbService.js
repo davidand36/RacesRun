@@ -621,11 +621,15 @@ function makeSelectList( fields ) {
 
 function convertDataForDb( data, fields ) {
     let dbData = _.pick( data, fields );
+    dbData = _.omitBy( dbData, function( val ) {
+        return (val === undefined)
+    } );
     dbData = _.mapKeys( dbData, function( val, key ) {
         return _.snakeCase( key );
     } );
-    dbData = _.pickBy( dbData, function( val ) {
-        return (val || val === 0); //So no empty strings. Avoids date problems...
+    dbData = _.mapValues( dbData, function( val ) {
+        //Convert '', NaN to null
+        return (val || val === 0 || val === false)  ?  val  :  null;
     } );
     return dbData;
 }

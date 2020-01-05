@@ -358,7 +358,6 @@ describe( 'dbService', function( ) {
                 gender: '',
                 dateOfBirth: '',
                 email: '',
-                visibility: '',
                 password: 'secret1'
             };
             const username = await dbService.createUser( minimalData );
