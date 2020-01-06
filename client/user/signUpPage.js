@@ -16,7 +16,7 @@ export default {
 
 import page from '//unpkg.com/page/page.mjs';
 import { getFormData } from '../common/forms.js';
-import user from './user.js';
+import userService from './userService.js';
 import auth from './auth.js';
 import signUpTemplate from './signUpTemplate.js';
 
@@ -47,7 +47,7 @@ function setEventHandlers() {
 
     function signUp( ) {
         const formData = getFormData( signUpForm );
-        user.create( formData )
+        userService.create( formData )
         .then( function( ) {
             return auth.logIn( formData.username, formData.password );
         } )

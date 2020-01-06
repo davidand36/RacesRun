@@ -13,6 +13,7 @@ import auth from './user/auth.js';
 import nav from './nav/nav.js';
 import logInPage from './user/logInPage.js';
 import signUpPage from './user/signUpPage.js';
+import profilePage from './user/profilePage.js';
 import calcPage from './calculator/calcPage.js';
 
 //=============================================================================
@@ -23,6 +24,8 @@ page( '/', showHomePage );
 page( '/logout', logOut );
 page( '/signup', showSignUpPage );
 page( '/profile', showProfilePage );
+page( '/editprofile', showEditProfilePage );
+page( '/password', showChangePasswordPage );
 page( '/calc', showCalcPage );
 page( '/others', showOtherRunnersPage );
 page( '*', handleUnknownRoute );
@@ -76,9 +79,24 @@ function showSignUpPage( ) {
 
 //=============================================================================
 
-function showProfilePage() {
+function showProfilePage( ctx ) {
     nav.setCurrentItem( 'profile' );
-    $( 'h1' ).html( 'Profile Page' );
+    profilePage.run( ctx.username );
+}
+
+//=============================================================================
+
+function showEditProfilePage( ) {
+    nav.setCurrentItem( 'profile' );
+    $( 'h1' ).html( 'Edit Profile Page' );
+    $( 'main' ).empty();
+}
+
+//=============================================================================
+
+function showChangePasswordPage( ) {
+    nav.setCurrentItem( 'profile' );
+    $( 'h1' ).html( 'Change Password Page' );
     $( 'main' ).empty();
 }
 

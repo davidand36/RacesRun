@@ -622,7 +622,7 @@ function makeSelectList( fields ) {
 function convertDataForDb( data, fields ) {
     let dbData = _.pick( data, fields );
     dbData = _.omitBy( dbData, function( val ) {
-        return (val === undefined)
+        return (val === undefined);
     } );
     dbData = _.mapKeys( dbData, function( val, key ) {
         return _.snakeCase( key );

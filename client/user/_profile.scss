@@ -1,0 +1,23 @@
+// _profile.scss
+//
+// Styling for profile page
+
+.profile-page {
+    margin: 0 auto;
+    max-width: 28rem;
+
+    .label {
+        display: inline-block;
+        padding-right: 1rem;
+        width: 8rem;
+        text-align: right;
+
+        &:after {
+            content: ':';
+        }
+    }
+
+    .controls {
+        margin-top: 1rem;
+    }
+}

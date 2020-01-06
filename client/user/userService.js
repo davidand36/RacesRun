@@ -1,5 +1,5 @@
 /*
-    user.js
+    userService.js
 
     Manages user data on client side
 */
