@@ -1,31 +1,92 @@
 <div class="profile-page">
-  <div class="info-line">
-    <span class="label">Username</span>
-    <span class="value">{{username}}</span>
-  </div>
-  <div class="info-line">
-    <span class="label">Full name</span>
-    <span class="value">{{fullName}}</span>
-  </div>
-  <div class="info-line">
-    <span class="label">Gender</span>
-    <span class="value">{{gender}}</span>
-  </div>
-  <div class="info-line">
-    <span class="label">Date of birth</span>
-    <span class="value">{{dateOfBirth}}</span>
-  </div>
-  <div class="info-line">
-    <span class="label">Email</span>
-    <span class="value">{{email}}</span>
-  </div>
-  <div class="info-line">
-    <span class="label">Visibility</span>
-    <span class="value">{{visibility}}</span>
-  </div>
+  <form id="profileForm">
+    <div id="errorMsg"></div>
 
-  <div class="controls">
-    <a href="/password" class="secondary-button">Change Password</a>
-    <a href="/editprofile" class="primary-button">Edit Profile</a>
-  </div>
+    <div class="input-line">
+      <label for="username">Username</label>
+      {{#if creating}}
+      <input type="text" name="username" id="username" required maxlength="25" />
+      {{else}}
+      {{username}}
+      {{/if}}
+    </div>
+
+    <div class="input-line">
+      <label for="fullName">Full name</label>
+      {{#if viewing}}
+      {{fullName}}
+      {{else}}
+      <input type="text" name="fullName" id="fullName" required maxlength="100" />
+      {{/if}}
+    </div>
+
+    <div class="input-line">
+      <label for="gender">Gender</label>
+      {{#if viewing}}
+      {{gender}}
+      {{else}}
+      <select name="gender" id="gender">
+        <option value=""></option>
+        <option value="female">female</option>
+        <option value="male">male</option>
+        <option value="non-binary">non-binary</option>
+      </select>
+      {{/if}}
+    </div>
+
+    <div class="input-line">
+      <label for="dateOfBirth">Date of birth</label>
+      {{#if viewing}}
+      {{dateOfBirthString}}
+      {{else}}
+      <input type="date" name="dateOfBirth" id="dateOfBirth" />
+      {{/if}}
+    </div>
+
+    <div class="input-line">
+      <label for="email">Email</label>
+      {{#if viewing}}
+      {{email}}
+      {{else}}
+      <input type="email" name="email" id="email" maxlength="250" />
+      {{/if}}
+    </div>
+
+    <div class="input-line">
+      <label for="visibility">Visibility</label>
+      {{#if viewing}}
+      {{visibility}}
+      {{else}}
+      <select name="visibility" id="visibility">
+        <option value="public">Public</option>
+        <option value="users">Other users</option>
+        <!--<option value="friends">Friends</option>-->
+        <option value="private" selected>Private</option>
+      </select>
+      {{/if}}
+    </div>
+
+    {{#if creating}}
+    <div class="input-line">
+      <label for="password">Password</label>
+      <input type="password" name="password" id="password" required maxlength="1000" />
+      <button type="button" id="showHidePassword" class="inline-button">Show</button>
+    </div>
+    {{/if}}
+
+    <div class="controls">
+      {{#if creating}}
+      <a href="/" class="secondary-button">Cancel</a>
+      <button type="button" id="signUp" class="primary-button">Sign Up</button>
+      {{/if}}
+      {{#if viewing}}
+      <a href="/changepassword" class="secondary-button">Change Password</a>
+      <a href="/editprofile" class="primary-button">Edit Profile</a>
+      {{/if}}
+      {{#if editing}}
+      <a href="/profile" class="secondary-button">Cancel</a>
+      <button type="button" id="update" class="primary-button">Update</button>
+      {{/if}}
+    </div>
+  </form>
 </div>

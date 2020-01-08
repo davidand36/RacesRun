@@ -18,7 +18,7 @@ import page from '//unpkg.com/page/page.mjs';
 import { getFormData } from '../common/forms.js';
 import userService from './userService.js';
 import auth from './auth.js';
-import signUpTemplate from './signUpTemplate.js';
+import profileTemplate from './profileTemplate.js';
 
 //=============================================================================
 
@@ -31,21 +31,21 @@ function run() {
 
 function render() {
     $( 'h1' ).text( 'Sign Up' );
-    const signUpHtml = signUpTemplate( {} );
+    const signUpHtml = profileTemplate( { creating: true } );
     $( 'main' ).html( signUpHtml );
 }
 
 //-----------------------------------------------------------------------------
 
 function setEventHandlers() {
-    const signUpForm = $( '#signUpForm' );
+    const profileForm = $( '#profileForm' );
     $( '#signUp' ).on( 'click', signUp );
     $( '#showHidePassword' ).on( 'click', togglePasswordVisibility );
 
     //-------------------------------------------------------------------------
 
     function signUp( ) {
-        const formData = getFormData( signUpForm );
+        const formData = getFormData( profileForm );
         userService.create( formData )
         .then( function( ) {
             return auth.logIn( formData.username, formData.password );
