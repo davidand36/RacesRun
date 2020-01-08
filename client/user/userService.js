@@ -16,6 +16,7 @@ export default {
 //=============================================================================
 
 import { request } from '../common/ajaxUtils.js';
+import { GregDate } from '../common/gregDate.js';
 
 //=============================================================================
 
@@ -34,6 +35,12 @@ function get( username ) {
         method: 'GET',
         url: '/api/v1/users/' + username,
         dataType: 'json'
+    } )
+    .then( function( user ) {
+        if ( user.dateOfBirth ) {
+            user.dateOfBirth = new GregDate( user.dateOfBirth );
+        }
+        return user;
     } );
 }
 
