@@ -1,23 +1,57 @@
-// _profile.scss
+// _logIn.scss
 //
-// Styling for profile page
+// Styling for sign-up page
 
-.profile-page {
+.signup-page {
     margin: 0 auto;
     max-width: 28rem;
 
-    .label {
-        display: inline-block;
-        padding-right: 1rem;
-        width: 8rem;
-        text-align: right;
+    form {
+        margin-bottom: 1rem;
+    }
 
-        &:after {
-            content: ':';
+    label {
+        width: 6rem;
+    }
+
+    input[ type="radio" ] {
+        margin-left: 0.6rem;
+    }
+
+    .radio-label {
+        width: auto;
+        text-align: left;
+    }
+
+    input[ name="username" ],
+    input[ name="fullName" ],
+    input[ name="email" ] {
+        width: 13rem;
+        @media (min-width: 22rem) {
+            width: 15rem;
+        }
+        @media (min-width: 24rem) {
+            width: 17rem;
+        }
+        @media (min-width: 28rem) {
+            width: 20rem;
         }
     }
 
-    .controls {
-        margin-top: 1rem;
+    input[ name="password" ] {
+        width: 10rem;
+        @media (min-width: 22rem) {
+            width: 12rem;
+        }
+        @media (min-width: 24rem) {
+            width: 14rem;
+        }
+        @media (min-width: 28rem) {
+            width: 17rem;
+        }
+    }
+
+    select {
+        width: 10rem;
     }
 }

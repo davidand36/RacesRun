@@ -119,10 +119,10 @@ export function getFormData( $form, options = {} ) {
 
 //=============================================================================
 
-export function setFormData( data, $form, options ) {
+export function setFormData( data, $form, options = {} ) {
     Object.keys( data ).forEach( function( key ) {
         const val = data[ key ];
-        if ( options.timeFields.includes( key ) ) {
+        if ( options.timeFields && options.timeFields.includes( key ) ) {
             setTimeInputValue( key, val, $form );
         } else {
             setNamedInputValue( key, val, $form );
