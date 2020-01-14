@@ -19,6 +19,7 @@ import page from '//unpkg.com/page/page.mjs';
 import { setFormData, getFormData } from '../common/forms.js';
 import userService from './userService.js';
 import profileTemplate from './profileTemplate.js';
+import { showErrorMessage, clearErrorMessage } from '../common/errorMessage.js';
 
 //=============================================================================
 
@@ -47,6 +48,7 @@ function setEventHandlers( username ) {
     //-------------------------------------------------------------------------
 
     function update( ) {
+        clearErrorMessage( );
         const profileForm = $( '#profileForm' );
         const formData = getFormData( profileForm );
         userService.update( username, formData )
@@ -54,7 +56,7 @@ function setEventHandlers( username ) {
             page( '/profile' );
         } )
         .catch( function( errorMsg ) {
-            $( '#errorMsg' ).text( errorMsg );
+            showErrorMessage( errorMsg );
         } );
     }
 }

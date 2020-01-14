@@ -1,0 +1,15 @@
+/*
+    _errorMessage.scss
+
+    Styling of error message
+*/
+
+#error-message {
+    display: none;
+    margin: 0.5rem auto;
+    border: thin solid $error-dark-color;
+    background-color: $error-light-color;
+    padding: 1rem;
+    max-width: 25rem;
+    color: $error-dark-color;
+}

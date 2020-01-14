@@ -19,6 +19,7 @@ import { getFormData } from '../common/forms.js';
 import userService from './userService.js';
 import auth from './auth.js';
 import profileTemplate from './profileTemplate.js';
+import { showErrorMessage, clearErrorMessage } from '../common/errorMessage.js';
 
 //=============================================================================
 
@@ -45,6 +46,7 @@ function setEventHandlers() {
     //-------------------------------------------------------------------------
 
     function signUp( ) {
+        clearErrorMessage( );
         const formData = getFormData( profileForm );
         userService.create( formData )
         .then( function( ) {
@@ -54,7 +56,7 @@ function setEventHandlers() {
             page( '/' );
         } )
         .catch( function( errorMsg ) {
-            $( '#errorMsg' ).text( errorMsg );
+            showErrorMessage( errorMsg );
         } );
     }
 

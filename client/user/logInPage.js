@@ -18,6 +18,7 @@ import page from '//unpkg.com/page/page.mjs';
 import { getNamedInputValue } from '../common/forms.js';
 import auth from './auth.js';
 import logInTemplate from './logInTemplate.js';
+import { showErrorMessage, clearErrorMessage } from '../common/errorMessage.js';
 
 //=============================================================================
 
@@ -45,6 +46,7 @@ function setEventHandlers( ) {
     const unauthorizedMsg = 'Incorrect username or password';
 
     function logIn( ) {
+        clearErrorMessage( );
         const username = getNamedInputValue( 'username', logInForm );
         const password = getNamedInputValue( 'password', logInForm );
         auth.logIn( username, password )
@@ -53,7 +55,7 @@ function setEventHandlers( ) {
         } ) 
         .catch( function( errorMsg ) {
             let msg = (errorMsg === 'Unauthorized') ? unauthorizedMsg : 'Error: ' + errorMsg;
-            $( '#errorMsg' ).text( msg );
+            showErrorMessage( msg );
         } );
 
     }
