@@ -10,7 +10,8 @@ export default {
     create,
     get,
     update,
-    remove   
+    remove,
+    changePassword
 };
 
 //=============================================================================
@@ -18,12 +19,14 @@ export default {
 import { request } from '../common/ajaxUtils.js';
 import { GregDate } from '../common/gregDate.js';
 
+const baseApiUrl = '/api/v1/users/';
+
 //=============================================================================
 
 function create( data ) {
     return request( {
         method: 'POST',
-        url: '/api/v1/users',
+        url: baseApiUrl,
         data: data
     } );
 }
@@ -33,7 +36,7 @@ function create( data ) {
 function get( username ) {
     return request( {
         method: 'GET',
-        url: '/api/v1/users/' + username,
+        url: baseApiUrl + username,
         dataType: 'json'
     } )
     .then( function( user ) {
@@ -49,7 +52,7 @@ function get( username ) {
 function update( username, newData ) {
     return request( {
         method: 'PUT',
-        url: '/api/v1/users/' + username,
+        url: baseApiUrl + username,
         data: newData
     } );
 }
@@ -59,7 +62,17 @@ function update( username, newData ) {
 function remove( username ) {
     return request( {
         method: 'DELETE',
-        url: '/api/v1/users/' + username
+        url: baseApiUrl + username
+    } );
+}
+
+//=============================================================================
+
+function changePassword( username, data ) {
+    return request( {
+        method: 'PUT',
+        url: baseApiUrl + username + '/password',
+        data: data
     } );
 }
 

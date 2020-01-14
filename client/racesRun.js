@@ -16,6 +16,7 @@ import logInPage from './user/logInPage.js';
 import signUpPage from './user/signUpPage.js';
 import profilePage from './user/profilePage.js';
 import editProfilePage from './user/editProfilePage.js';
+import passwordPage from './user/passwordPage.js';
 import calcPage from './calculator/calcPage.js';
 
 //=============================================================================
@@ -97,10 +98,9 @@ function showEditProfilePage( ctx ) {
 
 //=============================================================================
 
-function showChangePasswordPage( ) {
+function showChangePasswordPage( ctx ) {
     nav.setCurrentItem( 'profile' );
-    $( 'h1' ).html( 'Change Password Page' );
-    $( 'main' ).empty();
+    passwordPage.run( ctx.username );
 }
 
 //=============================================================================
