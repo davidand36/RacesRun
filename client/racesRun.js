@@ -11,6 +11,7 @@
 import page from '//unpkg.com/page/page.mjs';
 import auth from './user/auth.js';
 import nav from './nav/nav.js';
+import { clearErrorMessage } from './common/errorMessage.js';
 import logInPage from './user/logInPage.js';
 import signUpPage from './user/signUpPage.js';
 import profilePage from './user/profilePage.js';
@@ -21,6 +22,7 @@ import calcPage from './calculator/calcPage.js';
 
 page( '*', getAuthStatus );
 page( '*', runNavBar );
+page( '*', clearErrors );
 page( '/', showHomePage );
 page( '/logout', logOut );
 page( '/signup', showSignUpPage );
@@ -47,6 +49,12 @@ function runNavBar( ctx, next ) {
     next( );
 }
 
+//=============================================================================
+
+function clearErrors( ctx, next ) {
+    clearErrorMessage( );
+    next( );
+}
 //=============================================================================
 
 function showHomePage( ctx ) {

@@ -15,7 +15,7 @@ export default {
 //=============================================================================
 
 import page from '//unpkg.com/page/page.mjs';
-import { getFormData } from '../common/forms.js';
+import { getFormData, validateForm } from '../common/forms.js';
 import userService from './userService.js';
 import auth from './auth.js';
 import profileTemplate from './profileTemplate.js';
@@ -39,15 +39,18 @@ function render() {
 //-----------------------------------------------------------------------------
 
 function setEventHandlers() {
-    const profileForm = $( '#profileForm' );
     $( '#signUp' ).on( 'click', signUp );
     $( '#showHidePassword' ).on( 'click', togglePasswordVisibility );
 
     //-------------------------------------------------------------------------
 
     function signUp( ) {
+        const $profileForm = $( '#profileForm' );
         clearErrorMessage( );
-        const formData = getFormData( profileForm );
+        if ( ! validateForm( $profileForm ) ) {
+            return;
+        }
+        const formData = getFormData( $profileForm );
         userService.create( formData )
         .then( function( ) {
             return auth.logIn( formData.username, formData.password );

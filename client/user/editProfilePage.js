@@ -16,7 +16,7 @@ export default {
 //=============================================================================
 
 import page from '//unpkg.com/page/page.mjs';
-import { setFormData, getFormData } from '../common/forms.js';
+import { setFormData, getFormData, validateForm } from '../common/forms.js';
 import userService from './userService.js';
 import profileTemplate from './profileTemplate.js';
 import { showErrorMessage, clearErrorMessage } from '../common/errorMessage.js';
@@ -48,9 +48,12 @@ function setEventHandlers( username ) {
     //-------------------------------------------------------------------------
 
     function update( ) {
+        const $profileForm = $( '#profileForm' );
         clearErrorMessage( );
-        const profileForm = $( '#profileForm' );
-        const formData = getFormData( profileForm );
+        if ( ! validateForm( $profileForm ) ) {
+            return;
+        }
+        const formData = getFormData( $profileForm );
         userService.update( username, formData )
         .then( function( ) {
             page( '/profile' );

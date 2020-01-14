@@ -8,6 +8,7 @@
 
 import { hmsToSecs, secsToHms } from './timeUtils.js';
 import { formatNumber } from './mathUtils.js';
+import { showErrorMessage } from '../common/errorMessage.js';
 
 //=============================================================================
 
@@ -133,28 +134,39 @@ export function setFormData( data, $form, options = {} ) {
 //=============================================================================
 
 export function validateForm( $form ) {
-    let errors = [];
-    $( ':input:not(button)', $form ).each( function() {
-        const $input = $( this );
-        const required = $input.attr( 'required' );
-        if ( required ) {
-            const val = getInputValue( $input );
-            if ( val === '' ) {
-                const displayName = getDisplayName( $input );
-                errors.push( displayName + ' is required.' );
-            }
-        }
-    } );
-    return errors;
+    const errors = checkForErrors( $form );
+    if ( errors.length ) {
+        showErrorMessage( errors );
+        return false;
+    }
+    return true;
 
     //-------------------------------------------------------------------------
 
-    function getDisplayName( $input ) {
-        const id = $input.attr( 'id' );
-        const $label = $('label[for="' + id + '"]');
-        if ( $label.length ) {
-            return $label.text();
+    function checkForErrors( $form ) {
+        let errors = [];
+        $( ':input:not(button)', $form ).each( function() {
+            const $input = $( this );
+            const required = $input.attr( 'required' );
+            if ( required ) {
+                const val = getInputValue( $input );
+                if ( val === '' ) {
+                    const displayName = getDisplayName( $input );
+                    errors.push( displayName + ' is required.' );
+                }
+            }
+        } );
+        return errors;
+
+        //---------------------------------------------------------------------
+
+        function getDisplayName( $input ) {
+            const id = $input.attr( 'id' );
+            const $label = $( 'label[for="' + id + '"]' );
+            if ( $label.length ) {
+                return $label.text();
+            }
+            return $input.attr( 'name' ) || $input.attr( 'id' );
         }
-        return $input.attr( 'name' ) || $input.attr( 'id' );
     }
 }
