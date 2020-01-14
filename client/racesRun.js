@@ -21,8 +21,7 @@ import calcPage from './calculator/calcPage.js';
 //=============================================================================
 
 page( '*', getAuthStatus );
-page( '*', runNavBar );
-page( '*', clearErrors );
+page( '*', initPage );
 page( '/', showHomePage );
 page( '/logout', logOut );
 page( '/signup', showSignUpPage );
@@ -44,17 +43,13 @@ async function getAuthStatus( ctx, next ) {
 
 //=============================================================================
 
-function runNavBar( ctx, next ) {
+function initPage( ctx, next ) {
     nav.run( ctx.authenticated, ctx.username );
+    clearErrorMessage();
+    window.scrollTo( 0, 0 );
     next( );
 }
 
-//=============================================================================
-
-function clearErrors( ctx, next ) {
-    clearErrorMessage( );
-    next( );
-}
 //=============================================================================
 
 function showHomePage( ctx ) {
