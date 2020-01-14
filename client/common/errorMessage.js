@@ -23,6 +23,9 @@ export function showErrorMessage( msg ) {
     //-------------------------------------------------------------------------
 
     function makeList( arr ) {
+        if ( arr.length === 1 ) { //Don't make a list with just one item.
+            return arr[ 0 ];
+        }
         const $ul = $('<ul>');
         arr.forEach( item => {
             const $li = $('<li>').html( item );
