@@ -10,7 +10,7 @@ export default {
     create,
     get,
     update,
-    destroy   
+    remove   
 };
 
 //=============================================================================
@@ -56,7 +56,7 @@ function update( username, newData ) {
 
 //=============================================================================
 
-function destroy( username ) {
+function remove( username ) {
     return request( {
         method: 'DELETE',
         url: '/api/v1/users/' + username
